@@ -63,7 +63,10 @@ export class ScalewayOvpnService {
         errData += error.toString();
       });
       childProcess.on("exit", () => resolve([errData, commandData]));
-      childProcess.on("close", () => resolve([errData, commandData]));
+      childProcess.on("close", () => {
+        childProcess.kill("SIGKILL");
+        resolve([errData, commandData]);
+      });
       childProcess.on("error", (error) => reject(error));
     });
   }
