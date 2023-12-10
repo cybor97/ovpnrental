@@ -1,9 +1,11 @@
 import "dotenv/config";
 import { Telegraf } from "telegraf";
+import { schedule } from "node-cron";
 import { BOT_MENU } from "./consts";
 import { readdir } from "fs/promises";
 import { join } from "path";
 import { CommandRoute } from "./types";
+import { KeyManagerService } from "./services/KeyManagerService";
 
 if (!process.env.BOT_TOKEN) {
   throw new Error("BOT_TOKEN is not set");
@@ -35,5 +37,17 @@ async function main() {
   process.once("SIGINT", () => bot.stop("SIGINT"));
   process.once("SIGTERM", () => bot.stop("SIGTERM"));
 }
+
+schedule("* * * * *", async () => {
+  const keyManagerService = await KeyManagerService.getService();
+  const expiredRents = await keyManagerService.getExpiredRents();
+  for (const expiredRent of expiredRents) {
+    await keyManagerService.revokeLeasedKey(
+      expiredRent.userKey.user,
+      expiredRent.userKey.key,
+      expiredRent
+    );
+  }
+});
 
 main();

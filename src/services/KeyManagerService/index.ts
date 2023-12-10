@@ -103,9 +103,14 @@ export class KeyManagerService {
     return [userKey, data];
   }
 
+  public async getExpiredRents(): Promise<Array<UserRent>> {
+    return this.userRentDao.getExpiredKeys();
+  }
+
   async revokeLeasedKey(
     user: User,
-    keyName: string
+    keyName: string,
+    rent: UserRent | null = null
   ): Promise<[boolean, UserKey | null]> {
     const userKey = await this.userKeyDao.getByNameForUser(user, keyName);
     if (!userKey) {
@@ -115,7 +120,7 @@ export class KeyManagerService {
       return [false, userKey];
     }
 
-    const activeRent = await this.userRentDao.getActiveRent(userKey);
+    const activeRent = rent ?? (await this.userRentDao.getActiveRent(userKey));
     if (activeRent) {
       await this.userRentDao.remove(activeRent);
     }

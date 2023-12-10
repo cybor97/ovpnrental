@@ -1,7 +1,8 @@
-import { MoreThan, Repository } from "typeorm";
+import { LessThan, MoreThan, Repository } from "typeorm";
 import { UserKey } from "../entities/UserKey";
 import AppDataSource from "../dataSource";
 import { UserRent } from "../entities/UserRent";
+import { UserKeyStatus } from "../entities/UserKey/UserKeyStatus";
 
 export class UserRentDao {
   private userRentRepository: Repository<UserRent>;
@@ -39,5 +40,22 @@ export class UserRentDao {
 
   public async remove(userRent: UserRent): Promise<void> {
     await this.userRentRepository.remove(userRent);
+  }
+
+  public async getExpiredKeys(): Promise<Array<UserRent>> {
+    return this.userRentRepository.find({
+      where: {
+        expiresAt: LessThan(new Date()),
+        userKey: {
+          status: UserKeyStatus.ACTIVE,
+          eternal: false
+        },
+      },
+      relations: {
+        userKey: {
+          user: true
+        }
+      },
+    });
   }
 }
