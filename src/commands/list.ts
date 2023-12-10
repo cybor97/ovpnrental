@@ -1,29 +1,24 @@
-import { Format } from "telegraf";
-import { ScalewayOvpnService } from "../services/ScalewayOvpnService";
 import { CommandRoute } from "../types";
-import { sleep } from "../utils";
+import { getTgIdFromContext, replyWithDelay } from "../utils";
+import { KeyManagerService } from "../services/KeyManagerService";
 
 const ListCommand: CommandRoute = {
   filter: "list",
   handler: async (ctx) => {
-    const scalewayOvpnService = await ScalewayOvpnService.getService();
-    const { availableClients, revokedClients } =
-      await scalewayOvpnService.list();
-    const available = Format.spoiler(availableClients.join("\n"));
-    const revoked = Format.spoiler(revokedClients.join("\n"));
-    if (
-      process.env.RESTRICT_TO_ADMIN_ID &&
-      ctx.from?.id?.toString() !== process.env.RESTRICT_TO_ADMIN_ID
-    ) {
-      const message = await ctx.reply("Not ready yet, sorry");
-      await sleep(5000);
-      await ctx.deleteMessage(message.message_id);
+    const tgId = await getTgIdFromContext(ctx);
+    if (!tgId) {
+      return;
     }
-    const message = await ctx.reply(
-      Format.fmt`Available clients:\n${available}\n\nRevoked clients:\n${revoked}\n`
+    const keyManagerService = await KeyManagerService.getService();
+    const keys = await keyManagerService.getUserKeys(tgId);
+    if (keys.length === 0) {
+      await replyWithDelay(ctx, "No keys found");
+      return;
+    }
+    await replyWithDelay(
+      ctx,
+      keys.map((key) => `${key.key}: ${key.status}`).join("\n")
     );
-    await sleep(10000);
-    await ctx.deleteMessage(message.message_id);
   },
 };
 

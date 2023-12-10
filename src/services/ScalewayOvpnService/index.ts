@@ -6,8 +6,8 @@ export class ScalewayOvpnService {
   private sshKeyLocation: string;
   private sshHost: string;
   private constructor() {
-    this.sshKeyLocation = process.env.SSH_KEY_LOCATION || "";
-    this.sshHost = process.env.SSH_HOST || "";
+    this.sshKeyLocation = process.env.SSH_KEY_LOCATION ?? "";
+    this.sshHost = process.env.SSH_HOST ?? "";
   }
 
   public static async getService(): Promise<ScalewayOvpnService> {
@@ -46,9 +46,31 @@ export class ScalewayOvpnService {
     return { availableClients, revokedClients };
   }
 
+  public async create(keyName: string): Promise<string> {
+    const [, result] = await this.executeCommand(
+      ScalewayOvpnCommands.CREATE,
+      keyName
+    );
+    return result;
+  }
+  public async revoke(keyName: string): Promise<string> {
+    const [, result] = await this.executeCommand(
+      ScalewayOvpnCommands.REVOKE,
+      keyName
+    );
+    return result;
+  }
+  public async show(keyName: string): Promise<string> {
+    const [, result] = await this.executeCommand(
+      ScalewayOvpnCommands.SHOW,
+      keyName
+    );
+    return result;
+  }
+
   private executeCommand(
     command: ScalewayOvpnCommands,
-    args: string[] = []
+    ...args: string[]
   ): Promise<[string, string]> {
     return new Promise((resolve, reject) => {
       const childProcess = this.sshHost
