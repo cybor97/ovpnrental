@@ -38,7 +38,7 @@ async function main() {
   process.once("SIGTERM", () => bot.stop("SIGTERM"));
 }
 
-schedule("* * * * *", async () => {
+schedule("0 * * * *", async () => {
   const keyManagerService = await KeyManagerService.getService();
   const expiredRents = await keyManagerService.getExpiredRents();
   for (const expiredRent of expiredRents) {
