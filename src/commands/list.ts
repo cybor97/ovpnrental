@@ -12,7 +12,7 @@ const ListCommand: CommandRoute = {
     const keyManagerService = await KeyManagerService.getService();
     const keys = await keyManagerService.getUserKeys(tgId);
     if (keys.length === 0) {
-      await replyWithDelay(ctx, "No keys found");
+      await replyWithDelay(ctx, "No keys found\nPlease, use /lease to create temporary keys ;)");
       return;
     }
     await replyWithDelay(

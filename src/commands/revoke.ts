@@ -20,7 +20,7 @@ const RevokeCommand: CommandRoute = {
       (ctx.message.text as string).split(" ").slice(1).join("_").trim()
     );
     if (!userKey) {
-      await replyWithDelay(ctx, "Certificate not found");
+      await replyWithDelay(ctx, "Certificate not found. Try /list");
       return;
     }
     if (!revoked) {

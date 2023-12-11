@@ -21,11 +21,17 @@ const DownloadCommand: CommandRoute = {
       (ctx.message.text as string).split(" ").slice(1).join("_").trim()
     );
     if (!cert || !userKey) {
-      await replyWithDelay(ctx, "Certificate not found");
+      await replyWithDelay(
+        ctx,
+        "Certificate not found\nTry /download <key_name> with a key name got from /list"
+      );
       return;
     }
     if (userKey.status === UserKeyStatus.REVOKED) {
-      await replyWithDelay(ctx, "Certificate is revoked :(\nBut you still can renew it ;)");
+      await replyWithDelay(
+        ctx,
+        `Certificate is revoked :(\nBut you still can renew it ;)\nJust use /renew ${userKey.key} :)`
+      );
       return;
     }
     await replyWithDelay(
