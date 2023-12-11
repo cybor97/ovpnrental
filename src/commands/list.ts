@@ -17,7 +17,24 @@ const ListCommand: CommandRoute = {
     }
     await replyWithDelay(
       ctx,
-      keys.map((key) => `${key.key}: ${key.status}`).join("\n")
+      keys
+        .map(
+          (key) =>
+            `${key.key}: ${key.status} (${
+              key.eternal
+                ? "eternal"
+                : key.userRents
+                    .map((rent) => rent.expiresAt)
+                    .reduce(
+                      (acc, next) => (next && next > acc ? next : acc),
+                      new Date()
+                    )
+                    .toISOString()
+                    .split("T")
+                    .shift()
+            })`
+        )
+        .join("\n")
     );
   },
 };

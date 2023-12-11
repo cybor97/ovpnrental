@@ -29,7 +29,13 @@ export class UserKeyDao {
   }
 
   public async getByTgId(tgId: number): Promise<Array<UserKey>> {
-    return this.userKeyRepository.findBy({ user: { tgId } });
+    return this.userKeyRepository.find({
+      where: { user: { tgId } },
+      relations: {
+        user: true,
+        userRents: true,
+      },
+    });
   }
 
   public async getByNameForUser(
