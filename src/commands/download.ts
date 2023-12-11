@@ -40,7 +40,7 @@ const DownloadCommand: CommandRoute = {
         filename: `${userKey?.key}.ovpn`,
         source: Buffer.from(cert),
       },
-      10000,
+      15000,
       "replyWithDocument"
     );
   },

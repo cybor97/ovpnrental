@@ -18,7 +18,7 @@ export async function getTgIdFromContext(ctx: Context): Promise<number | null> {
 export async function replyWithDelay(
   ctx: Context,
   text: string | FmtString | InputFile,
-  delay: number = 5000,
+  delay: number = 10000,
   method: "reply" | "replyWithDocument" = "reply"
 ) {
   // @ts-ignore
