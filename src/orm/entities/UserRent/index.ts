@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { UserKey } from "../UserKey";
+import { DateTransformer } from "./DateTransformer";
 
 @Entity()
 export class UserRent {
@@ -18,6 +19,6 @@ export class UserRent {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column("date")
+  @Column("date", { transformer: new DateTransformer() })
   expiresAt: Date;
 }
