@@ -18,12 +18,23 @@ export async function getTgIdFromContext(ctx: Context): Promise<number | null> {
 
 export async function replyWithDelay(
   ctx: Context,
-  text: string | FmtString | InputFile,
-  delay: number = 10000,
-  method: "reply" | "replyWithDocument" = "reply"
+  text: string | FmtString,
+  delay: number = 10000
 ) {
   // @ts-ignore
-  const message = await ctx[method](text);
+  const message = await ctx.reply(text);
+  await sleep(delay);
+  await ctx.deleteMessage(message.message_id);
+}
+
+export async function replyWithDocumentWithDelay(
+  ctx: Context,
+  caption: string | FmtString | null,
+  document: InputFile,
+  delay: number = 10000
+) {
+  // @ts-ignore
+  const message = await ctx.replyWithDocument(document, { caption });
   await sleep(delay);
   await ctx.deleteMessage(message.message_id);
 }

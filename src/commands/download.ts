@@ -5,6 +5,7 @@ import { CommandRoute } from "../types";
 import {
   getTgIdFromContext,
   replyWithDelay,
+  replyWithDocumentWithDelay,
   serializeKeysForMessage,
 } from "../utils";
 
@@ -28,6 +29,7 @@ const DownloadCommand: CommandRoute = {
       .trim();
     let userKey: UserKey | null = null;
     let cert: string | null = null;
+    let caption: string | null = null;
     if (keyName) {
       const [userKeyData, certData] =
         await keyManagerService.downloadCertificate(user, keyName);
@@ -42,11 +44,7 @@ const DownloadCommand: CommandRoute = {
           userKey.key
         );
         cert = certData;
-        await replyWithDelay(
-          ctx,
-          `You have a key named "${userKey.key}", here it is:`,
-          15000
-        );
+        caption = `You have a key named "${userKey.key}", here it is:`;
       } else {
         await replyWithDelay(
           ctx,
@@ -72,14 +70,14 @@ const DownloadCommand: CommandRoute = {
       );
       return;
     }
-    await replyWithDelay(
+    await replyWithDocumentWithDelay(
       ctx,
+      caption,
       {
         filename: `${userKey?.key}.ovpn`,
         source: Buffer.from(cert),
       },
-      15000,
-      "replyWithDocument"
+      15000
     );
   },
 };
