@@ -1,6 +1,7 @@
 import { Context } from "telegraf";
 import { InputFile } from "telegraf/typings/core/types/typegram";
 import { FmtString } from "telegraf/typings/format";
+import { UserKey } from "./orm/entities/UserKey";
 
 export async function sleep(duration: number) {
   return new Promise((resolve) => setTimeout(resolve, duration));
@@ -25,4 +26,25 @@ export async function replyWithDelay(
   const message = await ctx[method](text);
   await sleep(delay);
   await ctx.deleteMessage(message.message_id);
+}
+
+export function serializeKeysForMessage(keys: UserKey[]) {
+  return keys
+    .map(
+      (key) =>
+        `${key.key}: ${key.status} (${
+          key.eternal
+            ? "eternal"
+            : key.userRents
+                .map((rent) => rent.expiresAt)
+                .reduce(
+                  (acc, next) => (next && next > acc ? next : acc),
+                  new Date()
+                )
+                .toISOString()
+                .split("T")
+                .shift()
+        })`
+    )
+    .join("\n");
 }

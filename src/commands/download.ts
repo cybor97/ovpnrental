@@ -1,7 +1,12 @@
+import { UserKey } from "../orm/entities/UserKey";
 import { UserKeyStatus } from "../orm/entities/UserKey/UserKeyStatus";
 import { KeyManagerService } from "../services/KeyManagerService";
 import { CommandRoute } from "../types";
-import { getTgIdFromContext, replyWithDelay } from "../utils";
+import {
+  getTgIdFromContext,
+  replyWithDelay,
+  serializeKeysForMessage,
+} from "../utils";
 
 const DownloadCommand: CommandRoute = {
   filter: "download",
@@ -15,11 +20,44 @@ const DownloadCommand: CommandRoute = {
       tgId,
       tgUsername: ctx.from?.username ?? "",
     });
-    const [userKey, cert] = await keyManagerService.downloadCertificate(
-      user,
-      // @ts-ignore
-      (ctx.message.text as string).split(" ").slice(1).join("_").trim()
-    );
+    // @ts-ignore
+    const keyName = (ctx.message.text as string)
+      .split(" ")
+      .slice(1)
+      .join("_")
+      .trim();
+    let userKey: UserKey | null = null;
+    let cert: string | null = null;
+    if (keyName) {
+      const [userKeyData, certData] =
+        await keyManagerService.downloadCertificate(user, keyName);
+      userKey = userKeyData;
+      cert = certData;
+    } else {
+      const keys = await keyManagerService.getUserKeys(tgId);
+      if (keys.length === 1) {
+        userKey = keys[0];
+        const [, certData] = await keyManagerService.downloadCertificate(
+          user,
+          userKey.key
+        );
+        cert = certData;
+        await replyWithDelay(
+          ctx,
+          `You have a key named "${userKey.key}", here it is:`,
+          15000
+        );
+      } else {
+        await replyWithDelay(
+          ctx,
+          `Please specify the certificate you want to download:\n${serializeKeysForMessage(
+            keys
+          )}`,
+          15000
+        );
+        return;
+      }
+    }
     if (!cert || !userKey) {
       await replyWithDelay(
         ctx,
