@@ -31,11 +31,13 @@ const DownloadCommand: CommandRoute = {
     let cert: string | null = null;
     let caption: string | null = null;
     if (keyName) {
+      await ctx.sendChatAction('upload_document')
       const [userKeyData, certData] =
         await keyManagerService.downloadCertificate(user, keyName);
       userKey = userKeyData;
       cert = certData;
     } else {
+      await ctx.sendChatAction('upload_document')
       const keys = await keyManagerService.getUserKeys(tgId);
       if (keys.length === 1) {
         userKey = keys[0];
