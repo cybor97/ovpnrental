@@ -16,7 +16,7 @@ export class UserKeyDao {
     tgMetadata: UserKeyTgMetadata
   ): Promise<[boolean, UserKey]> {
     let userKey = await this.userKeyRepository.findOne({
-      where: { user: { id: user.id } },
+      where: { user: { id: user.id }, status: Not(UserKeyStatus.DELETED) },
     });
     let created = false;
     if (!userKey) {
@@ -60,6 +60,7 @@ export class UserKeyDao {
     return await this.userKeyRepository.findOne({
       where: {
         key: keyName,
+        status: Not(UserKeyStatus.DELETED),
         user: { id: user.id },
       },
     });
@@ -67,7 +68,7 @@ export class UserKeyDao {
 
   public async getByKeyName(keyName: string): Promise<UserKey | null> {
     return await this.userKeyRepository.findOne({
-      where: { key: keyName },
+      where: { key: keyName, status: Not(UserKeyStatus.DELETED) },
       relations: { user: true },
     });
   }
