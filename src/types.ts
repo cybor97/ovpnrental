@@ -1,8 +1,14 @@
 import { Context } from "telegraf";
+import { User } from "./orm/entities/User";
+import { KeyManagerService } from "./services/KeyManagerService";
 
 export interface CommandRoute {
   filter: string;
-  handler: (ctx: Context) => Promise<void>;
+  handler: (
+    keyManagerService: KeyManagerService,
+    user: User,
+    ctx: Context
+  ) => Promise<void>;
 }
 
 export interface BotMenuItem {

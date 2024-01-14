@@ -6,16 +6,23 @@ import {
   OneToMany,
 } from "typeorm";
 import { User } from "../User";
-import { UserKeyStatus } from "./UserKeyStatus";
+import { UserKeyStatus, UserKeyTgMetadata } from "./types";
 import { UserRent } from "../UserRent";
+import { VPNServer } from "../VPNServer";
 
 @Entity()
 export class UserKey {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column("json")
+  tgMetadata: UserKeyTgMetadata;
+
   @ManyToOne(() => User, (user) => user.userKeys)
   user: User;
+
+  @ManyToOne(() => VPNServer, (vpnServer) => vpnServer.userKeys)
+  vpnServer: VPNServer;
 
   @Column("varchar")
   key: string;

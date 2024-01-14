@@ -2,25 +2,40 @@ import { DataSource } from "typeorm";
 import { UserKey } from "./entities/UserKey";
 import { User } from "./entities/User";
 import { UserRent } from "./entities/UserRent";
+import { VPNServer } from "./entities/VPNServer";
 import { join } from "path";
 import { homedir } from "os";
 import { InitDB1701894820679 } from "./migrations/1701894820679-InitDB";
+import { AddServer1702326435123 } from "./migrations/1702326435123-AddServer";
+import { existsSync, mkdirSync } from "fs";
+import logger from "../logger";
+import { UpdateUserKey1705184832393 } from "./migrations/1705184832393-UpdateUserKey";
 
+const dbDir = join(homedir(), ".config/vpnrental");
+const dbPath = join(dbDir, "vpnrental.sqlite");
+if (!existsSync(dbPath)) {
+  mkdirSync(dbDir, { recursive: true });
+}
 const AppDataSource = new DataSource({
   type: "better-sqlite3",
-  database: join(homedir(), "vpnrental.sqlite"),
-  entities: [User, UserKey, UserRent],
+  database: dbPath,
+  entities: [User, UserKey, UserRent, VPNServer],
   migrations: [
-    InitDB1701894820679
-  ]
+    InitDB1701894820679,
+    AddServer1702326435123,
+    UpdateUserKey1705184832393,
+  ],
 });
 
 AppDataSource.initialize()
   .then(() => {
-    console.log("Data Source has been initialized!");
+    logger.info("[DataSource][init] Data Source has been initialized!");
   })
   .catch((err) => {
-    console.error("Error during Data Source initialization", err);
+    logger.error(
+      "[DataSource][init] Error during Data Source initialization",
+      err
+    );
   });
 
 export default AppDataSource;

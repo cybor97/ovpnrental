@@ -22,3 +22,17 @@ export const BOT_MENU: Array<BotMenuItem> = [
     description: "Send a key as a file",
   },
 ];
+
+export enum NatsCommand {
+  CREATE = "cert.create",
+  REVOKE = "cert.revoke",
+  LIST = "cert.list",
+  SHOW = "cert.show",
+}
+
+export const NatsCommands = [
+  NatsCommand.CREATE,
+  NatsCommand.REVOKE,
+  NatsCommand.LIST,
+  NatsCommand.SHOW,
+];

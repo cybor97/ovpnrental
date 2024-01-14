@@ -6,18 +6,18 @@ import { UserKeyDao } from "./UserKeyDao";
 import { UserRentDao } from "./UserRentDao";
 
 export abstract class Dao {
-  public static async getDao(
+  public static async getDao<T extends Dao>(
     type: typeof User | typeof UserKey | typeof UserRent
-  ): Promise<UserKeyDao | UserRentDao | UserDao | null> {
+  ): Promise<T> {
     switch (type) {
       case UserKey:
-        return new UserKeyDao();
+        return new UserKeyDao() as Dao as T;
       case UserRent:
-        return new UserRentDao();
+        return new UserRentDao() as Dao as T;
       case User:
-        return new UserDao();
+        return new UserDao() as Dao as T;
       default:
-        return null;
+        return null as unknown as T;
     }
   }
 }

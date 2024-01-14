@@ -2,7 +2,7 @@ import { LessThan, MoreThan, Repository } from "typeorm";
 import { UserKey } from "../entities/UserKey";
 import AppDataSource from "../dataSource";
 import { UserRent } from "../entities/UserRent";
-import { UserKeyStatus } from "../entities/UserKey/UserKeyStatus";
+import { UserKeyStatus } from "../entities/UserKey/types";
 
 export class UserRentDao {
   private userRentRepository: Repository<UserRent>;
@@ -21,20 +21,24 @@ export class UserRentDao {
       activeRent.userKey = userKey;
       return [created, activeRent];
     }
-    const newRent = await this.userRentRepository.save({
-      userKey,
+    const newRentData = this.userRentRepository.create({
+      userKey: { id: userKey.id },
       createdAt: new Date(),
       expiresAt: new Date(new Date().getTime() + leaseDuration),
     });
-    newRent.userKey = userKey;
+    newRentData.userKey = userKey;
+    const newRent = await this.userRentRepository.save(newRentData);
     created = true;
     return [created, newRent];
   }
 
   public async getActiveRent(userKey: UserKey): Promise<UserRent | null> {
-    return await this.userRentRepository.findOneBy({
-      userKey,
-      expiresAt: MoreThan(new Date()),
+    return await this.userRentRepository.findOne({
+      where: {
+        userKey: { id: userKey.id },
+        expiresAt: MoreThan(new Date()),
+      },
+      relations: { userKey: true },
     });
   }
 
@@ -48,14 +52,18 @@ export class UserRentDao {
         expiresAt: LessThan(new Date()),
         userKey: {
           status: UserKeyStatus.ACTIVE,
-          eternal: false
+          eternal: false,
         },
       },
       relations: {
         userKey: {
-          user: true
-        }
+          user: true,
+        },
       },
     });
+  }
+
+  public async save(userRent: UserRent): Promise<UserRent> {
+    return await this.userRentRepository.save(userRent);
   }
 }

@@ -1,7 +1,7 @@
-import { Repository } from "typeorm";
+import { FindOptionsWhere, Repository } from "typeorm";
 import { UserKey } from "../entities/UserKey";
 import { User } from "../entities/User";
-import { UserKeyStatus } from "../entities/UserKey/UserKeyStatus";
+import { UserKeyStatus, UserKeyTgMetadata } from "../entities/UserKey/types";
 import AppDataSource from "../dataSource";
 
 export class UserKeyDao {
@@ -11,14 +11,20 @@ export class UserKeyDao {
     this.userKeyRepository = AppDataSource.getRepository(UserKey);
   }
 
-  public async getOrCreateUserKey(user: User): Promise<[boolean, UserKey]> {
-    let userKey = await this.userKeyRepository.findOneBy({ user });
+  public async getOrCreateUserKey(
+    user: User,
+    tgMetadata: UserKeyTgMetadata
+  ): Promise<[boolean, UserKey]> {
+    let userKey = await this.userKeyRepository.findOne({
+      where: { user: { id: user.id } },
+    });
     let created = false;
     if (!userKey) {
       userKey = await this.userKeyRepository.save({
         user,
         key: user.tgUsername,
-        status: UserKeyStatus.ACTIVE,
+        tgMetadata,
+        status: UserKeyStatus.PENDING,
         eternal: false,
       });
       userKey.key = this.generateKey(user, userKey);
@@ -28,9 +34,16 @@ export class UserKeyDao {
     return [created, userKey];
   }
 
-  public async getByTgId(tgId: number): Promise<Array<UserKey>> {
+  public async getByTgId(
+    tgId: number,
+    status?: UserKeyStatus
+  ): Promise<Array<UserKey>> {
+    const where: FindOptionsWhere<UserKey> = { user: { tgId } };
+    if (status) {
+      where.status = status;
+    }
     return this.userKeyRepository.find({
-      where: { user: { tgId } },
+      where,
       relations: {
         user: true,
         userRents: true,
@@ -42,9 +55,18 @@ export class UserKeyDao {
     user: User,
     keyName: string
   ): Promise<UserKey | null> {
-    return await this.userKeyRepository.findOneBy({
-      user,
-      key: keyName,
+    return await this.userKeyRepository.findOne({
+      where: {
+        key: keyName,
+        user: { id: user.id },
+      },
+    });
+  }
+
+  public async getByKeyName(keyName: string): Promise<UserKey | null> {
+    return await this.userKeyRepository.findOne({
+      where: { key: keyName },
+      relations: { user: true },
     });
   }
 
@@ -55,6 +77,13 @@ export class UserKeyDao {
 
   public async renew(userKey: UserKey): Promise<void> {
     userKey.status = UserKeyStatus.ACTIVE;
+    await this.userKeyRepository.update(
+      { id: userKey.id },
+      { status: UserKeyStatus.ACTIVE }
+    );
+  }
+
+  public async save(userKey: UserKey): Promise<void> {
     await this.userKeyRepository.save(userKey);
   }
 
