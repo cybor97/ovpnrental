@@ -1,4 +1,4 @@
-import { FindOptionsWhere, Repository } from "typeorm";
+import { FindOptionsWhere, In, Not, Repository } from "typeorm";
 import { UserKey } from "../entities/UserKey";
 import { User } from "../entities/User";
 import { UserKeyStatus, UserKeyTgMetadata } from "../entities/UserKey/types";
@@ -41,6 +41,8 @@ export class UserKeyDao {
     const where: FindOptionsWhere<UserKey> = { user: { tgId } };
     if (status) {
       where.status = status;
+    } else {
+      where.status = Not(UserKeyStatus.DELETED);
     }
     return this.userKeyRepository.find({
       where,
