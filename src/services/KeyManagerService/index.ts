@@ -106,7 +106,7 @@ export class KeyManagerService {
     const [userRentCreated, userRent] =
       await this.userRentDao.getOrCreateUserRent(userKey, KEY_LEASE_DURATION);
     if (userRentCreated) {
-      userKey.key = this.userKeyDao.generateKey(user, userKey, userRent.id);
+      userKey.key = this.userKeyDao.generateKey(user);
       await this.userKeyDao.renew(userKey);
       this.natsService.eventEmitter.emit(NatsCommand.CREATE, {
         clientName: userKey.key,

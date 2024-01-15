@@ -1,4 +1,4 @@
-import { FindOptionsWhere, In, Not, Repository } from "typeorm";
+import { FindOptionsWhere, Not, Repository } from "typeorm";
 import { UserKey } from "../entities/UserKey";
 import { User } from "../entities/User";
 import { UserKeyStatus, UserKeyTgMetadata } from "../entities/UserKey/types";
@@ -27,7 +27,7 @@ export class UserKeyDao {
         status: UserKeyStatus.PENDING,
         eternal: false,
       });
-      userKey.key = this.generateKey(user, userKey);
+      userKey.key = this.generateKey(user);
       await this.userKeyRepository.save(userKey);
       created = true;
     }
@@ -90,15 +90,8 @@ export class UserKeyDao {
     await this.userKeyRepository.save(userKey);
   }
 
-  public generateKey(
-    user: User,
-    userKey: UserKey,
-    rentId: number | null = null
-  ): string {
+  public generateKey(user: User): string {
     const userPrefix = user.tgUsername ?? `${user.tgId}_`;
-    if (!rentId) {
-      return `${userPrefix}${userKey.id}`;
-    }
-    return `${userPrefix}${userKey.id}r${rentId}`;
+    return `${userPrefix}${Date.now().toString(36)}`;
   }
 }
