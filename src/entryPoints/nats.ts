@@ -19,6 +19,7 @@ export async function initNats(): Promise<void> {
   const keyManagerService = await KeyManagerService.getService();
   const botManagerService = await BotManagerService.getService();
   const natsService = await NATSService.getService();
+  await natsService.initEmitter(...NatsCommands);
   await natsService.initConsumer(...NatsCommands.map((cmd) => `${cmd}.update`));
   for (const cmd of NatsCommands) {
     natsService.eventEmitter.on(
