@@ -16,7 +16,8 @@ const RenewCommand: CommandRoute = {
     const [renewed, userKey] = await keyManagerService.renewLeasedKey(
       user,
       // @ts-ignore
-      sanitizeKeyName(ctx.message?.text)
+      sanitizeKeyName(ctx.message?.text),
+      ctx.chat?.id ?? null
     );
     if (!userKey) {
       await replyWithDelay(ctx, getText({ key: "no_keys" }), 10000, keyboard);

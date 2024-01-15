@@ -86,7 +86,8 @@ export class KeyManagerService {
 
   public async renewLeasedKey(
     user: User,
-    keyName: string
+    keyName: string,
+    chatId: number | null
   ): Promise<[boolean, UserKey | null]> {
     let userKey: UserKey | null = null;
     if (keyName) {
@@ -103,10 +104,13 @@ export class KeyManagerService {
     if (userKey.status === UserKeyStatus.ACTIVE) {
       return [false, userKey];
     }
-    const [userRentCreated, userRent] =
-      await this.userRentDao.getOrCreateUserRent(userKey, KEY_LEASE_DURATION);
+    const [userRentCreated] = await this.userRentDao.getOrCreateUserRent(
+      userKey,
+      KEY_LEASE_DURATION
+    );
     if (userRentCreated) {
       userKey.key = this.userKeyDao.generateKey(user);
+      await this.updateChatId(userKey, chatId);
       await this.userKeyDao.renew(userKey);
       this.natsService.eventEmitter.emit(NatsCommand.CREATE, {
         clientName: userKey.key,
@@ -117,12 +121,14 @@ export class KeyManagerService {
 
   public async downloadCertificate(
     user: User,
-    keyName: string
+    keyName: string,
+    chatId: number | null
   ): Promise<UserKey | null> {
     const userKey = await this.userKeyDao.getByNameForUser(user, keyName);
     if (!userKey) {
       return null;
     }
+    await this.updateChatId(userKey, chatId);
     this.natsService.eventEmitter.emit(NatsCommand.SHOW, {
       clientName: userKey.key,
     });
@@ -168,7 +174,8 @@ export class KeyManagerService {
   async revokeLeasedKey(
     user: User,
     keyName: string,
-    rent: UserRent | null = null
+    rent: UserRent | null,
+    chatId: number | null
   ): Promise<[boolean, UserKey | null]> {
     let userKey: UserKey | null = null;
     if (keyName) {
@@ -190,11 +197,26 @@ export class KeyManagerService {
     if (activeRent) {
       await this.userRentDao.remove(activeRent);
     }
+    await this.updateChatId(userKey, chatId);
     await this.userKeyDao.revoke(userKey);
     this.natsService.eventEmitter.emit(NatsCommand.REVOKE, {
       clientName: userKey.key,
     });
 
     return [true, userKey];
+  }
+
+  private async updateChatId(
+    userKey: UserKey,
+    chatId: number | null
+  ): Promise<UserKey> {
+    if (!userKey.tgMetadata) {
+      userKey.tgMetadata = { issuedCallbackId: null, issuedInChatId: null };
+    }
+    if (userKey.tgMetadata.issuedInChatId === chatId) {
+      return userKey;
+    }
+    userKey.tgMetadata.issuedInChatId = chatId;
+    return this.userKeyDao.save(userKey);
   }
 }

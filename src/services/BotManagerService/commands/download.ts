@@ -13,14 +13,19 @@ const DownloadCommand: CommandRoute = {
     if (keyName) {
       const userKeyData = await keyManagerService.downloadCertificate(
         user,
-        keyName
+        keyName,
+        ctx.chat?.id ?? null
       );
       userKey = userKeyData;
     } else {
       const keys = await keyManagerService.getUserKeys(user.tgId);
       if (keys.length === 1) {
         userKey = keys[0];
-        await keyManagerService.downloadCertificate(user, userKey.key);
+        await keyManagerService.downloadCertificate(
+          user,
+          userKey.key,
+          ctx.chat?.id ?? null
+        );
       } else if (keys.length > 1) {
         await replyWithDelay(
           ctx,

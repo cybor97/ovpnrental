@@ -7,11 +7,10 @@ export async function initCron(): Promise<void> {
   schedule("0 * * * *", async () => {
     const expiredRents = await keyManagerService.getExpiredRents();
     for (const expiredRent of expiredRents) {
-      await keyManagerService.revokeLeasedKey(
-        expiredRent.userKey.user,
-        expiredRent.userKey.key,
-        expiredRent
-      );
+      const userKey = expiredRent.userKey;
+      const chatId = userKey.tgMetadata?.issuedInChatId ?? null;
+      const { user, key } = userKey;
+      await keyManagerService.revokeLeasedKey(user, key, expiredRent, chatId);
     }
   });
   logger.info("[cron][initCron] Cron initialized");

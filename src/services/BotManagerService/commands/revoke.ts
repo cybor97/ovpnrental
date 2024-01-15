@@ -8,7 +8,9 @@ const RevokeCommand: CommandRoute = {
     const [revoked, userKey] = await keyManagerService.revokeLeasedKey(
       user,
       // @ts-ignore
-      sanitizeKeyName(ctx.message?.text)
+      sanitizeKeyName(ctx.message?.text),
+      null,
+      ctx.chat?.id ?? null
     );
     const keyboard = [
       [
@@ -19,7 +21,7 @@ const RevokeCommand: CommandRoute = {
       ],
     ];
     if (!userKey) {
-      await replyWithDelay(ctx, getText({ key: "no_keys" }), 10000, keyboard);
+      await replyWithDelay(ctx, getText({ key: "no_active_keys" }), 10000, keyboard);
       return;
     }
     if (!revoked) {

@@ -31,6 +31,7 @@ export default {
     )}. Sorry, you cannot rent another one.`;
   },
   no_keys: () => "No keys found",
+  no_active_keys: () => "No active keys found",
   fail_to_renew: () => "Failed to renew certificate, might be already renewed",
   fail_to_revoke: () =>
     "Failed to revoke certificate, might be already revoked",

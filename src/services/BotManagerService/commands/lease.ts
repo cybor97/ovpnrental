@@ -1,6 +1,7 @@
 import { CommandRoute } from "../../../types";
 import { replyWithDelay } from "../../../utils";
 import { getText } from "../../../locale";
+import { UserKeyStatus } from "../../../orm/entities/UserKey/types";
 
 const LeaseCommand: CommandRoute = {
   filter: "lease",
@@ -48,7 +49,7 @@ const LeaseCommand: CommandRoute = {
         data,
       }),
       10000,
-      keyboard
+      userKey.status === UserKeyStatus.ACTIVE ? keyboard : undefined
     );
   },
 };

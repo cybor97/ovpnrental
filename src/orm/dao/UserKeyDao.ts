@@ -86,8 +86,8 @@ export class UserKeyDao {
     );
   }
 
-  public async save(userKey: UserKey): Promise<void> {
-    await this.userKeyRepository.save(userKey);
+  public async save(userKey: UserKey): Promise<UserKey> {
+    return await this.userKeyRepository.save(userKey, { reload: true });
   }
 
   public generateKey(user: User): string {
