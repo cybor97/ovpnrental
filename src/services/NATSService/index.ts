@@ -32,6 +32,7 @@ export class NATSService {
     await this.initConnection("consumer");
     for (const topic of topics) {
       this.consumerConnection.subscribe(topic, {
+        queue: topic,
         callback: (err, msg) => {
           if (err) {
             logger.error(
