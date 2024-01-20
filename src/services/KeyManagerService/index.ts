@@ -179,8 +179,8 @@ export class KeyManagerService {
   public async resetCallbackId(userKey: UserKey): Promise<void> {
     if (userKey.tgMetadata) {
       userKey.tgMetadata.issuedCallbackId = null;
+      await this.userKeyDao.resetCallbackId(userKey);
     }
-    await this.userKeyDao.save(userKey);
   }
 
   async revokeLeasedKey(

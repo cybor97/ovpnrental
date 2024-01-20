@@ -80,17 +80,17 @@ export class UserKeyDao {
     );
   }
 
-  public async renew(userKey: UserKey): Promise<void> {
-    await this.userKeyRepository.update(
-      { id: userKey.id },
-      { status: UserKeyStatus.ACTIVE }
-    );
-  }
-
   public async markProcessing(userKey: UserKey): Promise<void> {
     await this.userKeyRepository.update(
       { id: userKey.id },
       { status: UserKeyStatus.PROCESSING }
+    );
+  }
+
+  public async resetCallbackId(userKey: UserKey): Promise<void> {
+    await this.userKeyRepository.update(
+      { id: userKey.id },
+      { tgMetadata: { issuedCallbackId: null } }
     );
   }
 
