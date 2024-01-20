@@ -166,13 +166,15 @@ export class KeyManagerService {
     const statusBefore = userKey.status;
 
     userKey.status = opts.status;
-    await this.userKeyDao.save(userKey);
 
     const activeRent = await this.userRentDao.getActiveRent(userKey);
     if (activeRent && opts.expiresAt) {
       activeRent.expiresAt = opts.expiresAt;
       await this.userRentDao.save(activeRent);
     }
+
+    await this.userKeyDao.updateStatus(userKey, opts.status);
+
     return { statusAfter: userKey.status, statusBefore };
   }
 

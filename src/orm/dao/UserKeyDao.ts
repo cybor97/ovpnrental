@@ -90,8 +90,15 @@ export class UserKeyDao {
   public async resetCallbackId(userKey: UserKey): Promise<void> {
     await this.userKeyRepository.update(
       { id: userKey.id },
-      { tgMetadata: { issuedCallbackId: null } }
+      { tgMetadata: { ...userKey.tgMetadata, issuedCallbackId: null } }
     );
+  }
+
+  public async updateStatus(
+    userKey: UserKey,
+    status: UserKeyStatus
+  ): Promise<void> {
+    await this.userKeyRepository.update({ id: userKey.id }, { status });
   }
 
   public async save(userKey: UserKey): Promise<UserKey> {
