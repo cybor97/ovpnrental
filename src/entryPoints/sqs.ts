@@ -68,7 +68,12 @@ async function handleStatusUpdate(
       );
       break;
     case MQCommand.REVOKE:
-      await handleRevokeCommand(botManagerService, keyManagerService, userKey, data);
+      await handleRevokeCommand(
+        botManagerService,
+        keyManagerService,
+        userKey,
+        data
+      );
       break;
     case MQCommand.SHOW:
       await handleShowCommand(botManagerService, userKey, data);
@@ -88,6 +93,15 @@ async function handleCreateCommand(
   userKey: UserKey,
   data: UpdateKeyStatusMessage
 ) {
+  if (
+    userKey.status === UserKeyStatus.ACTIVE &&
+    data.status === UserKeyStatus.PROCESSING
+  ) {
+    logger.info(
+      `[sqs][handleCreateCommand] Key ${userKey.key} is already active, ignoring`
+    );
+    return;
+  }
   const status =
     {
       [MQCommandStatus.PROCESSING]: UserKeyStatus.PROCESSING,
