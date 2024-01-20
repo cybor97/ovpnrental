@@ -119,9 +119,11 @@ export class KeyManagerService {
       KEY_LEASE_DURATION
     );
     if (userRentCreated) {
-      userKey.key = this.userKeyDao.generateKey(user);
       await this.updateChatId(userKey, chatId);
-      await this.userKeyDao.renew(userKey);
+
+      userKey.key = this.userKeyDao.generateKey(user);
+      userKey.status = UserKeyStatus.PROCESSING;
+      await this.userKeyDao.save(userKey);
       this.sqsService.eventEmitter.emit(MQCommand.CREATE, {
         clientName: userKey.key,
       });
@@ -208,12 +210,16 @@ export class KeyManagerService {
       await this.userRentDao.remove(activeRent);
     }
     await this.updateChatId(userKey, chatId);
-    await this.userKeyDao.revoke(userKey);
+    await this.userKeyDao.markProcessing(userKey);
     this.sqsService.eventEmitter.emit(MQCommand.REVOKE, {
       clientName: userKey.key,
     });
 
     return [true, userKey];
+  }
+
+  public async markRevoked(userKey: UserKey): Promise<void> {
+    await this.userKeyDao.revoke(userKey);
   }
 
   private async updateChatId(

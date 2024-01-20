@@ -68,7 +68,7 @@ async function handleStatusUpdate(
       );
       break;
     case MQCommand.REVOKE:
-      await handleRevokeCommand(botManagerService, userKey, data);
+      await handleRevokeCommand(botManagerService, keyManagerService, userKey, data);
       break;
     case MQCommand.SHOW:
       await handleShowCommand(botManagerService, userKey, data);
@@ -163,6 +163,7 @@ async function handleShowCommand(
 
 async function handleRevokeCommand(
   botManagerService: BotManagerService,
+  keyManagerService: KeyManagerService,
   userKey: UserKey,
   data: UpdateKeyStatusMessage
 ) {
@@ -177,6 +178,7 @@ async function handleRevokeCommand(
       });
       break;
     case MQCommandStatus.SUCCESS:
+      await keyManagerService.markRevoked(userKey);
       await botManagerService.sendMessage({
         userKey,
         message: getText({ key: "key_revoked" }) as string,

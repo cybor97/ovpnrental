@@ -74,15 +74,23 @@ export class UserKeyDao {
   }
 
   public async revoke(userKey: UserKey): Promise<void> {
-    userKey.status = UserKeyStatus.REVOKED;
-    await this.userKeyRepository.save(userKey);
+    await this.userKeyRepository.update(
+      { id: userKey.id },
+      { status: UserKeyStatus.REVOKED }
+    );
   }
 
   public async renew(userKey: UserKey): Promise<void> {
-    userKey.status = UserKeyStatus.ACTIVE;
     await this.userKeyRepository.update(
       { id: userKey.id },
       { status: UserKeyStatus.ACTIVE }
+    );
+  }
+
+  public async markProcessing(userKey: UserKey): Promise<void> {
+    await this.userKeyRepository.update(
+      { id: userKey.id },
+      { status: UserKeyStatus.PROCESSING }
     );
   }
 
