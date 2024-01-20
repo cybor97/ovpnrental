@@ -15,3 +15,9 @@ export interface BotMenuItem {
   command: string;
   description: string;
 }
+
+export enum MQCommandStatus {
+  PROCESSING = "PROCESSING",
+  SUCCESS = "SUCCESS",
+  FAILURE = "FAILURE",
+}

@@ -2,7 +2,8 @@ import { getText } from "../../../locale";
 import { UserKey } from "../../../orm/entities/UserKey";
 import { UserKeyStatus } from "../../../orm/entities/UserKey/types";
 import { CommandRoute } from "../../../types";
-import { replyWithDelay, sanitizeKeyName } from "../../../utils";
+import { defaultReply } from "../../../utils/bot";
+import { sanitizeKeyName } from "../../../utils/data";
 
 const DownloadCommand: CommandRoute = {
   filter: "download",
@@ -27,12 +28,11 @@ const DownloadCommand: CommandRoute = {
           ctx.chat?.id ?? null
         );
       } else if (keys.length > 1) {
-        await replyWithDelay(
+        await defaultReply(
           ctx,
           getText({
             key: "choose_a_key",
           }),
-          undefined,
           [
             keys.map((key) => ({
               text: key.key,
@@ -44,16 +44,15 @@ const DownloadCommand: CommandRoute = {
       }
     }
     if (!userKey) {
-      await replyWithDelay(ctx, getText({ key: "no_keys" }));
+      await defaultReply(ctx, getText({ key: "no_keys" }));
       return;
     }
     if (userKey.status === UserKeyStatus.REVOKED) {
-      await replyWithDelay(
+      await defaultReply(
         ctx,
         getText({
           key: "key_revoked_download",
         }),
-        undefined,
         [
           [
             {
@@ -65,7 +64,7 @@ const DownloadCommand: CommandRoute = {
       );
       return;
     }
-    await replyWithDelay(
+    await defaultReply(
       ctx,
       getText({
         key: "download_key",

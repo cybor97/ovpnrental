@@ -1,7 +1,8 @@
 import { CommandRoute } from "../../../types";
-import { replyWithDelay, serializeKeysForMessage } from "../../../utils";
+import { defaultReply } from "../../../utils/bot";
 import { KeyManagerService } from "../../KeyManagerService";
 import { getText } from "../../../locale";
+import { serializeKeysForMessage } from "../../../utils/data";
 
 const ListCommand: CommandRoute = {
   filter: "list",
@@ -17,10 +18,10 @@ const ListCommand: CommandRoute = {
       ],
     ];
     if (keys.length === 0) {
-      await replyWithDelay(ctx, getText({ key: "no_keys" }), 10000, keyboard);
+      await defaultReply(ctx, getText({ key: "no_keys" }), keyboard);
       return;
     }
-    await replyWithDelay(ctx, serializeKeysForMessage(keys));
+    await defaultReply(ctx, serializeKeysForMessage(keys));
   },
 };
 

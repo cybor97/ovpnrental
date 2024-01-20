@@ -10,8 +10,9 @@ import { Dao } from "../../orm/dao";
 import { UserRentDao } from "../../orm/dao/UserRentDao";
 import { UserDao } from "../../orm/dao/UserDao";
 import { UpdateKeyPayload } from "./types";
-import { NATSService } from "../NATSService";
-import { NatsCommand } from "../../consts";
+import { SQSService } from "../SQSService";
+import { MQCommand } from "../../consts";
+import config from "../../config";
 
 const KEY_LEASE_DURATION = 1000 * 60 * 60 * 24 * 7;
 
@@ -20,29 +21,38 @@ export class KeyManagerService {
   private userDao: UserDao;
   private userKeyDao: UserKeyDao;
   private userRentDao: UserRentDao;
-  private natsService: NATSService;
+  private sqsService: SQSService;
 
   private constructor(opts: {
-    natsService: NATSService;
+    sqsService: SQSService;
     userKeyDao: UserKeyDao;
     userRentDao: UserRentDao;
     userDao: UserDao;
   }) {
-    const { natsService, userKeyDao, userRentDao, userDao } = opts;
+    const { sqsService, userKeyDao, userRentDao, userDao } = opts;
     this.userDao = userDao;
     this.userKeyDao = userKeyDao;
     this.userRentDao = userRentDao;
-    this.natsService = natsService;
+    this.sqsService = sqsService;
   }
 
   public static async getService(): Promise<KeyManagerService> {
     if (!KeyManagerService.instance) {
-      const natsService = await NATSService.getService();
+      const sqs = config.sqs;
+      const { region, endpoint, accessKeyId, secretAccessKey } = sqs;
+      const sqsService = SQSService.getService({
+        region,
+        endpoint,
+        accessKeyId,
+        secretAccessKey,
+        emitterQueueUrl: sqs.appQueueUrl,
+        consumerQueueUrl: sqs.agentQueueUrl,
+      });
       const userKeyDao = await Dao.getDao<UserKeyDao>(UserKey);
       const userRentDao = await Dao.getDao<UserRentDao>(UserRent);
       const userDao = await Dao.getDao<UserDao>(User);
       KeyManagerService.instance = new KeyManagerService({
-        natsService,
+        sqsService,
         userKeyDao,
         userRentDao,
         userDao,
@@ -75,7 +85,7 @@ export class KeyManagerService {
       tgMetadata
     );
     if (userKeyCreated) {
-      this.natsService.eventEmitter.emit(NatsCommand.CREATE, {
+      this.sqsService.eventEmitter.emit(MQCommand.CREATE, {
         clientName: userKey.key,
       });
     }
@@ -112,7 +122,7 @@ export class KeyManagerService {
       userKey.key = this.userKeyDao.generateKey(user);
       await this.updateChatId(userKey, chatId);
       await this.userKeyDao.renew(userKey);
-      this.natsService.eventEmitter.emit(NatsCommand.CREATE, {
+      this.sqsService.eventEmitter.emit(MQCommand.CREATE, {
         clientName: userKey.key,
       });
     }
@@ -129,7 +139,7 @@ export class KeyManagerService {
       return null;
     }
     await this.updateChatId(userKey, chatId);
-    this.natsService.eventEmitter.emit(NatsCommand.SHOW, {
+    this.sqsService.eventEmitter.emit(MQCommand.SHOW, {
       clientName: userKey.key,
     });
     return userKey;
@@ -199,7 +209,7 @@ export class KeyManagerService {
     }
     await this.updateChatId(userKey, chatId);
     await this.userKeyDao.revoke(userKey);
-    this.natsService.eventEmitter.emit(NatsCommand.REVOKE, {
+    this.sqsService.eventEmitter.emit(MQCommand.REVOKE, {
       clientName: userKey.key,
     });
 

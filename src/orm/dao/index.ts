@@ -6,7 +6,7 @@ import { UserKeyDao } from "./UserKeyDao";
 import { UserRentDao } from "./UserRentDao";
 
 export abstract class Dao {
-  public static async getDao<T extends Dao>(
+  public static async getDao<T extends Dao | null>(
     type: typeof User | typeof UserKey | typeof UserRent
   ): Promise<T> {
     switch (type) {
@@ -17,7 +17,7 @@ export abstract class Dao {
       case User:
         return new UserDao() as Dao as T;
       default:
-        return null as unknown as T;
+        return null as T;
     }
   }
 }

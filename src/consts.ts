@@ -23,16 +23,16 @@ export const BOT_MENU: Array<BotMenuItem> = [
   },
 ];
 
-export enum NatsCommand {
+export enum MQCommand {
   CREATE = "cert.create",
   REVOKE = "cert.revoke",
   LIST = "cert.list",
   SHOW = "cert.show",
 }
 
-export const NatsCommands = [
-  NatsCommand.CREATE,
-  NatsCommand.REVOKE,
-  NatsCommand.LIST,
-  NatsCommand.SHOW,
+export const MQCommands = [
+  MQCommand.CREATE,
+  MQCommand.REVOKE,
+  MQCommand.LIST,
+  MQCommand.SHOW,
 ];

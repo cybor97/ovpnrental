@@ -1,12 +1,13 @@
-import { NatsCommand, NatsCommands } from "../consts";
+import { MQCommand, MQCommands } from "../consts";
 import { getText } from "../locale";
-import logger from "../logger";
+import logger from "../utils/logger";
 import { UserKey } from "../orm/entities/UserKey";
 import { UserKeyStatus } from "../orm/entities/UserKey/types";
 import { BotManagerService } from "../services/BotManagerService";
 import { KeyManagerService } from "../services/KeyManagerService";
-import { NATSService } from "../services/NATSService";
-import { NatsCommandStatus } from "../services/NATSService/types";
+import { SQSService } from "../services/SQSService";
+import { MQCommandStatus } from "../types";
+import config from "../config";
 
 interface UpdateKeyStatusMessage {
   clientName: string;
@@ -15,40 +16,50 @@ interface UpdateKeyStatusMessage {
   data: string;
 }
 
-export async function initNats(): Promise<void> {
+export async function initSQS(): Promise<void> {
   const keyManagerService = await KeyManagerService.getService();
   const botManagerService = await BotManagerService.getService();
-  const natsService = await NATSService.getService();
-  await natsService.initEmitter(...NatsCommands);
-  await natsService.initConsumer(...NatsCommands.map((cmd) => `${cmd}.update`));
-  for (const cmd of NatsCommands) {
-    natsService.eventEmitter.on(
+  const sqs = config.sqs;
+  const { region, endpoint, accessKeyId, secretAccessKey } = sqs;
+  const sqsService = SQSService.getService({
+    region,
+    endpoint,
+    accessKeyId,
+    secretAccessKey,
+    emitterQueueUrl: sqs.appQueueUrl,
+    consumerQueueUrl: sqs.agentQueueUrl,
+  });
+  sqsService.initEmitter(...MQCommands);
+  sqsService.initConsumer(...MQCommands.map((cmd) => `${cmd}.update`));
+  for (const cmd of MQCommands) {
+    sqsService.eventEmitter.on(
       `${cmd}.update`,
       (data) =>
         void handleStatusUpdate(cmd, keyManagerService, botManagerService, data)
     );
   }
-  logger.info("[nats][initNats] NATS initialized");
+  logger.info("[sqs][initSQS] SQS initialized");
 }
 
 async function handleStatusUpdate(
-  cmd: NatsCommand,
+  cmd: MQCommand,
   keyManagerService: KeyManagerService,
   botManagerService: BotManagerService,
   data: UpdateKeyStatusMessage
 ) {
-  logger.info(`[nats][handleStatusUpdate] ${data.clientName} ${cmd}=>${data.status}`);
+  logger.info(
+    `[sqs][handleStatusUpdate] ${data.clientName} ${cmd}=>${data.status}`
+  );
   const userKey = await keyManagerService.getUserKeyByName(data.clientName);
   if (!userKey) {
     logger.error(
-      "[nats][handleStatusUpdate] Could not find user key with name: ",
+      "[sqs][handleStatusUpdate] Could not find user key with name: ",
       data.clientName
     );
     return;
   }
-
   switch (cmd) {
-    case NatsCommand.CREATE:
+    case MQCommand.CREATE:
       await handleCreateCommand(
         botManagerService,
         keyManagerService,
@@ -56,15 +67,15 @@ async function handleStatusUpdate(
         data
       );
       break;
-    case NatsCommand.REVOKE:
+    case MQCommand.REVOKE:
       await handleRevokeCommand(botManagerService, userKey, data);
       break;
-    case NatsCommand.SHOW:
+    case MQCommand.SHOW:
       await handleShowCommand(botManagerService, userKey, data);
       break;
-    case NatsCommand.LIST:
+    case MQCommand.LIST:
     default:
-      logger.error(`[nats][handleStatusUpdate] Unknown command: ${cmd}`);
+      logger.error(`[sqs][handleStatusUpdate] Unknown command: ${cmd}`);
       break;
   }
   await botManagerService.answerCallback(userKey);
@@ -79,10 +90,10 @@ async function handleCreateCommand(
 ) {
   const status =
     {
-      [NatsCommandStatus.PROCESSING]: UserKeyStatus.PROCESSING,
-      [NatsCommandStatus.SUCCESS]: UserKeyStatus.ACTIVE,
-      [NatsCommandStatus.FAILURE]: UserKeyStatus.DELETED,
-    }[data.status as NatsCommandStatus] ?? UserKeyStatus.PENDING;
+      [MQCommandStatus.PROCESSING]: UserKeyStatus.PROCESSING,
+      [MQCommandStatus.SUCCESS]: UserKeyStatus.ACTIVE,
+      [MQCommandStatus.FAILURE]: UserKeyStatus.DELETED,
+    }[data.status as MQCommandStatus] ?? UserKeyStatus.PENDING;
   const statusUpdate = await keyManagerService.updateUserKeyStatus({
     keyName: data.clientName,
     status,
@@ -128,17 +139,17 @@ async function handleShowCommand(
   userKey: UserKey,
   data: UpdateKeyStatusMessage
 ) {
-  switch (data.status as NatsCommandStatus) {
-    case NatsCommandStatus.PROCESSING:
+  switch (data.status as MQCommandStatus) {
+    case MQCommandStatus.PROCESSING:
       await botManagerService.sendUploadingChatAction({ userKey });
       break;
-    case NatsCommandStatus.FAILURE:
+    case MQCommandStatus.FAILURE:
       await botManagerService.sendMessage({
         userKey,
         message: getText({ key: "fail_to_download" }) as string,
       });
       break;
-    case NatsCommandStatus.SUCCESS:
+    case MQCommandStatus.SUCCESS:
       await botManagerService.sendDocument({
         userKey,
         data: {
@@ -155,17 +166,17 @@ async function handleRevokeCommand(
   userKey: UserKey,
   data: UpdateKeyStatusMessage
 ) {
-  switch (data.status as NatsCommandStatus) {
-    case NatsCommandStatus.PROCESSING:
+  switch (data.status as MQCommandStatus) {
+    case MQCommandStatus.PROCESSING:
       await botManagerService.sendTypingChatAction({ userKey });
       break;
-    case NatsCommandStatus.FAILURE:
+    case MQCommandStatus.FAILURE:
       await botManagerService.sendMessage({
         userKey,
         message: getText({ key: "fail_to_revoke" }) as string,
       });
       break;
-    case NatsCommandStatus.SUCCESS:
+    case MQCommandStatus.SUCCESS:
       await botManagerService.sendMessage({
         userKey,
         message: getText({ key: "key_revoked" }) as string,

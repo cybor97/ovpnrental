@@ -1,8 +1,8 @@
 {
   "dependencies": {
+    "@aws-sdk/client-sqs": "^3.495.0",
     "better-sqlite3": "^8.7.0",
     "dotenv": "^16.3.1",
-    "nats": "^2.18.0",
     "node-cron": "^3.0.3",
     "pkg": "^5.8.1",
     "telegraf": "^4.15.3",
@@ -13,14 +13,16 @@
     "@types/node": "^20.10.3",
     "@types/node-cron": "^3.0.11",
     "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3"
   },
   "name": "earlgreyencryptor",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch './**/*.ts' --exec 'ts-node' ./src/index.ts",
-    "start": "ts-node ./src/index.ts",
+    "dev": "nodemon --watch './**/*.ts' --exec 'ts-node' -r tsconfig-paths/register ./src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "ts-node -r tsconfig-paths/register ./src/index.ts",
     "db": "typeorm-ts-node-commonjs"
   },
   "author": "rinfly97",

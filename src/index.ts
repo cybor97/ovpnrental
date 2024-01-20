@@ -1,12 +1,12 @@
 import "dotenv/config";
 import { initBot } from "./entryPoints/bot";
 import { initCron } from "./entryPoints/cron";
-import { initNats } from "./entryPoints/nats";
+import { initSQS } from "./entryPoints/sqs";
 
 async function main() {
   await initCron();
   await initBot();
-  await initNats();
+  await initSQS();
 }
 
 main();

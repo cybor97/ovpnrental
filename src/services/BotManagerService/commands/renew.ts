@@ -1,6 +1,7 @@
 import { getText } from "../../../locale";
 import { CommandRoute } from "../../../types";
-import { replyWithDelay, sanitizeKeyName } from "../../../utils";
+import { defaultReply } from "../../../utils/bot";
+import { sanitizeKeyName } from "../../../utils/data";
 
 const RenewCommand: CommandRoute = {
   filter: "renew",
@@ -20,14 +21,14 @@ const RenewCommand: CommandRoute = {
       ctx.chat?.id ?? null
     );
     if (!userKey) {
-      await replyWithDelay(ctx, getText({ key: "no_keys" }), 10000, keyboard);
+      await defaultReply(ctx, getText({ key: "no_keys" }), keyboard);
       return;
     }
     if (!renewed) {
-      await replyWithDelay(ctx, getText({ key: "fail_to_renew" }));
+      await defaultReply(ctx, getText({ key: "fail_to_renew" }));
       return;
     }
-    await replyWithDelay(
+    await defaultReply(
       ctx,
       getText({
         key: "order_created",

@@ -1,6 +1,7 @@
 import { getText } from "../../../locale";
 import { CommandRoute } from "../../../types";
-import { replyWithDelay, sanitizeKeyName } from "../../../utils";
+import { defaultReply } from "../../../utils/bot";
+import { sanitizeKeyName } from "../../../utils/data";
 
 const RevokeCommand: CommandRoute = {
   filter: "revoke",
@@ -21,14 +22,14 @@ const RevokeCommand: CommandRoute = {
       ],
     ];
     if (!userKey) {
-      await replyWithDelay(ctx, getText({ key: "no_active_keys" }), 10000, keyboard);
+      await defaultReply(ctx, getText({ key: "no_active_keys" }), keyboard);
       return;
     }
     if (!revoked) {
-      await replyWithDelay(ctx, getText({ key: "fail_to_revoke" }));
+      await defaultReply(ctx, getText({ key: "fail_to_revoke" }));
       return;
     }
-    await replyWithDelay(
+    await defaultReply(
       ctx,
       getText({ key: "revoke_order_created", data: { key: userKey.key } })
     );

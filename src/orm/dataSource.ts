@@ -8,7 +8,7 @@ import { homedir } from "os";
 import { InitDB1701894820679 } from "./migrations/1701894820679-InitDB";
 import { AddServer1702326435123 } from "./migrations/1702326435123-AddServer";
 import { existsSync, mkdirSync } from "fs";
-import logger from "../logger";
+import logger from "../utils/logger";
 import { UpdateUserKey1705184832393 } from "./migrations/1705184832393-UpdateUserKey";
 
 const dbDir = join(homedir(), ".config/vpnrental");

@@ -1,5 +1,5 @@
 import { CommandRoute } from "../../../types";
-import { replyWithDelay } from "../../../utils";
+import { defaultReply } from "../../../utils/bot";
 import { getText } from "../../../locale";
 import { UserKeyStatus } from "../../../orm/entities/UserKey/types";
 
@@ -33,7 +33,7 @@ const LeaseCommand: CommandRoute = {
       expiresAt: rent.expiresAt,
     };
     if (leaseCreated) {
-      await replyWithDelay(
+      await defaultReply(
         ctx,
         getText({
           key: "order_created",
@@ -42,13 +42,12 @@ const LeaseCommand: CommandRoute = {
       );
       return;
     }
-    await replyWithDelay(
+    await defaultReply(
       ctx,
       getText({
         key: "already_in_use",
         data,
       }),
-      10000,
       userKey.status === UserKeyStatus.ACTIVE ? keyboard : undefined
     );
   },

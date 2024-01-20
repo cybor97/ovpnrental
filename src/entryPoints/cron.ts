@@ -1,6 +1,6 @@
 import { schedule } from "node-cron";
 import { KeyManagerService } from "../services/KeyManagerService";
-import logger from "../logger";
+import logger from "../utils/logger";
 
 export async function initCron(): Promise<void> {
   const keyManagerService = await KeyManagerService.getService();

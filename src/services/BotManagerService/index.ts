@@ -7,8 +7,8 @@ import { readdir } from "fs/promises";
 import { User } from "../../orm/entities/User";
 import { UserKey } from "../../orm/entities/UserKey";
 import { KeyManagerService } from "../KeyManagerService";
-import { getTgIdFromContext } from "../../utils";
-import logger from "../../logger";
+import { getTgIdFromContext } from "../../utils/bot";
+import logger from "../../utils/logger";
 import { inspect } from "util";
 import {
   SendDocumentPayload,

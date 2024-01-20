@@ -1,4 +1,4 @@
-import logger from "../logger";
+import logger from "../utils/logger";
 import { BotManagerService } from "../services/BotManagerService";
 
 export async function initBot(): Promise<void> {

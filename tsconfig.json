@@ -13,7 +13,11 @@
     "strict": true,
     "noImplicitAny": true,
     "skipLibCheck": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "outDir": "dist",
+    "paths": {
+      "@utils/*": ["./src/utils/*"]
+    }
   },
   "exclude": ["node_modules", "dist"]
 }
