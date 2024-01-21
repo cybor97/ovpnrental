@@ -19,7 +19,7 @@ const DownloadCommand: CommandRoute = {
       );
       userKey = userKeyData;
     } else {
-      const keys = await keyManagerService.getUserKeys(user.tgId);
+      const keys = await keyManagerService.getUserKeys(user.tgId, UserKeyStatus.ACTIVE);
       if (keys.length === 1) {
         userKey = keys[0];
         await keyManagerService.downloadCertificate(
