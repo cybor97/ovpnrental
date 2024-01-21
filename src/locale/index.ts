@@ -1,16 +1,18 @@
 import { FmtString } from "telegraf/typings/format";
 import * as translationData from "./data";
 
-export function getText(opts: {
-  locale?: keyof typeof translationData;
-  key: keyof (typeof translationData)["en"];
-  data?: Record<string, unknown>;
+type Locales = keyof typeof translationData;
+type SupportedKeys = keyof (typeof translationData)["en"];
+type TranslationData = Record<string, unknown>;
+
+function getText(opts: {
+  locale?: Locales;
+  key: SupportedKeys;
+  data?: TranslationData;
 }): string | FmtString {
   const { locale, key, data } = opts;
-  const translations =
-    translationData[locale as unknown as keyof typeof translationData] ??
-    translationData.en;
-  return translations[key as unknown as keyof typeof translations](
-    data as unknown
-  );
+  const translations = translationData[locale as Locales] ?? translationData.en;
+  return translations[key](data);
 }
+
+export { getText, SupportedKeys, Locales, TranslationData };

@@ -1,25 +1,26 @@
+import { getText } from "./locale";
 import { BotMenuItem } from "./types";
 
 export const BOT_MENU: Array<BotMenuItem> = [
   {
     command: "list",
-    description: "List my VPN keys",
+    description: getText({ key: "list_command" }) as string,
   },
   {
     command: "lease",
-    description: "Lease a VPN key for some time",
+    description: getText({ key: "lease_command" }) as string,
   },
   {
     command: "renew",
-    description: "Renew a key (everything's possible...)",
+    description: getText({ key: "renew_command" }) as string,
   },
   {
     command: "revoke",
-    description: "Revoke a key (pass them upon leaving, you mtfk!)",
+    description: getText({ key: "revoke_command" }) as string,
   },
   {
     command: "download",
-    description: "Send a key as a file",
+    description: getText({ key: "download_command" }) as string,
   },
 ];
 

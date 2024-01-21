@@ -1,3 +1,4 @@
+import { SupportedKeys, getText } from "../locale";
 import { UserKey } from "../orm/entities/UserKey";
 
 export function sanitizeKeyName(keyName: string) {
@@ -9,11 +10,16 @@ export function sanitizeKeyName(keyName: string) {
 
 export function serializeKeysForMessage(keys: UserKey[]) {
   return keys
-    .map(
-      (key) =>
-        `${key.key}: ${key.status} (${
-          key.eternal
-            ? "eternal"
+    .map((key) =>
+      getText({
+        key: "key_list_item",
+        data: {
+          key: key.key,
+          status: getText({
+            key: ("status_" + key.status) as SupportedKeys,
+          }),
+          rentDuration: key.eternal
+            ? getText({ key: "eternal" })
             : key.userRents
                 .map((rent) => rent.expiresAt)
                 .reduce(
@@ -22,8 +28,9 @@ export function serializeKeysForMessage(keys: UserKey[]) {
                 )
                 .toISOString()
                 .split("T")
-                .shift()
-        })`
+                .shift(),
+        },
+      })
     )
     .join("\n");
 }

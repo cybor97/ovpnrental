@@ -142,7 +142,9 @@ async function handleCreateCommand(
       userKey,
       message: getText({
         key: "status_updated",
-        data: statusUpdate,
+        data: {
+          statusAfter: getText({ key: `status_${statusUpdate.statusAfter}` }),
+        },
       }) as string,
     });
   }
