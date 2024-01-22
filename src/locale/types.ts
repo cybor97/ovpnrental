@@ -6,7 +6,7 @@ export interface LeaseCreatedPayload {
 export interface ListItemPayload {
   key: string;
   status: string;
-  rentDuration: string;
+  rentDuration?: string;
 }
 
 export interface StatusData {

@@ -19,7 +19,10 @@ const DownloadCommand: CommandRoute = {
       );
       userKey = userKeyData;
     } else {
-      const keys = await keyManagerService.getUserKeys(user.tgId, UserKeyStatus.ACTIVE);
+      const keys = await keyManagerService.getUserKeys(
+        user.tgId,
+        UserKeyStatus.ACTIVE
+      );
       if (keys.length === 1) {
         userKey = keys[0];
         await keyManagerService.downloadCertificate(
@@ -35,7 +38,13 @@ const DownloadCommand: CommandRoute = {
           }),
           [
             keys.map((key) => ({
-              text: key.key,
+              text: getText({
+                key: "key_list_item",
+                data: {
+                  key: key.key,
+                  status: getText({ key: `status_${key.status}` }),
+                },
+              }) as string,
               callback_data: `download ${key.key}`,
             })),
           ]

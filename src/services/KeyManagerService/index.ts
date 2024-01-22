@@ -137,7 +137,7 @@ export class KeyManagerService {
     chatId: number | null
   ): Promise<UserKey | null> {
     const userKey = await this.userKeyDao.getByNameForUser(user, keyName);
-    if (!userKey) {
+    if (!userKey || userKey.status !== UserKeyStatus.ACTIVE) {
       return null;
     }
     await this.updateChatId(userKey, chatId);

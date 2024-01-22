@@ -23,7 +23,7 @@ export default {
   eternal: () => "♾️",
   key_list_item: (data: unknown) => {
     const { key, status, rentDuration } = data as ListItemPayload;
-    return `Key 🔑${key}: ${status} (${rentDuration})`;
+    return `Key 🔑${key}: ${status}${rentDuration ? ` (${rentDuration})` : ""}`;
   },
   order_created: (data: unknown) => {
     const leaseData = data as LeaseCreatedPayload;
