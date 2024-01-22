@@ -29,6 +29,7 @@ export enum MQCommand {
   REVOKE = "cert.revoke",
   LIST = "cert.list",
   SHOW = "cert.show",
+  NUDGE = "cert.nudge",
 }
 
 export const MQCommands = [

@@ -15,6 +15,7 @@ import { MQCommand } from "../../consts";
 import config from "../../config";
 
 const KEY_LEASE_DURATION = 1000 * 60 * 60 * 24 * 7;
+const STUCK_KEY_DURATION = 1000 * 60 * 30;
 
 export class KeyManagerService {
   private static instance: KeyManagerService;
@@ -122,8 +123,9 @@ export class KeyManagerService {
     );
     if (userRentCreated || userKey.status === UserKeyStatus.REVOKED) {
       await this.updateChatId(userKey, chatId);
-      
+
       userKey.key = this.userKeyDao.generateKey(user);
+      userKey.generatedAt = new Date();
       userKey.status = UserKeyStatus.PROCESSING;
       await this.userKeyDao.save(userKey);
       this.sqsService.eventEmitter.emit(MQCommand.CREATE, {
@@ -152,6 +154,24 @@ export class KeyManagerService {
 
   public async getExpiredRents(): Promise<Array<UserRent>> {
     return this.userRentDao.getExpiredKeys();
+  }
+
+  public async getOldProcessingKeys(): Promise<Array<UserKey>> {
+    return this.userKeyDao.getProcessingKeys({
+      from: null,
+      to: new Date(Date.now() - STUCK_KEY_DURATION),
+    });
+  }
+
+  public async nudge(userKey: UserKey): Promise<void> {
+    await this.userKeyDao.save({
+      id: userKey.id,
+      // to avoid nudging too often
+      generatedAt: new Date(),
+    });
+    this.sqsService.eventEmitter.emit(MQCommand.NUDGE, {
+      clientName: userKey.key,
+    });
   }
 
   public async getUserKeyByName(keyName: string): Promise<UserKey | null> {
@@ -215,7 +235,7 @@ export class KeyManagerService {
       await this.userRentDao.remove(activeRent);
     }
     await this.updateChatId(userKey, chatId);
-    await this.userKeyDao.markProcessing(userKey);
+    await this.userKeyDao.updateStatus(userKey, UserKeyStatus.PROCESSING);
     this.sqsService.eventEmitter.emit(MQCommand.REVOKE, {
       clientName: userKey.key,
     });
@@ -224,7 +244,11 @@ export class KeyManagerService {
   }
 
   public async markRevoked(userKey: UserKey): Promise<void> {
-    await this.userKeyDao.revoke(userKey);
+    await this.userKeyDao.updateStatus(userKey, UserKeyStatus.REVOKED);
+  }
+
+  public async markActive(userKey: UserKey): Promise<void> {
+    await this.userKeyDao.updateStatus(userKey, UserKeyStatus.ACTIVE);
   }
 
   private async updateChatId(

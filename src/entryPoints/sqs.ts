@@ -6,7 +6,7 @@ import { UserKeyStatus } from "../orm/entities/UserKey/types";
 import { BotManagerService } from "../services/BotManagerService";
 import { KeyManagerService } from "../services/KeyManagerService";
 import { SQSService } from "../services/SQSService";
-import { MQCommandStatus } from "../types";
+import { MQCommandStatus, OVPNCertificateStatus } from "../types";
 import config from "../config";
 
 interface UpdateKeyStatusMessage {
@@ -77,6 +77,14 @@ async function handleStatusUpdate(
       break;
     case MQCommand.SHOW:
       await handleShowCommand(botManagerService, userKey, data);
+      break;
+    case MQCommand.NUDGE:
+      await handleNudgeCommand(
+        botManagerService,
+        keyManagerService,
+        userKey,
+        data
+      );
       break;
     case MQCommand.LIST:
     default:
@@ -200,5 +208,53 @@ async function handleRevokeCommand(
         message: getText({ key: "key_revoked" }) as string,
       });
       break;
+  }
+}
+
+async function handleNudgeCommand(
+  botManagerService: BotManagerService,
+  keyManagerService: KeyManagerService,
+  userKey: UserKey,
+  data: UpdateKeyStatusMessage
+) {
+  const certStatus = data.data as unknown as OVPNCertificateStatus;
+  switch (data.status as MQCommandStatus) {
+    case MQCommandStatus.PROCESSING:
+      await botManagerService.sendTypingChatAction({ userKey });
+      break;
+    case MQCommandStatus.FAILURE:
+      logger.error("[sqs][handleNudgeCommand] Failed to nudge key");
+      break;
+    case MQCommandStatus.SUCCESS:
+      switch (certStatus) {
+        case OVPNCertificateStatus.REVOKED:
+        case OVPNCertificateStatus.EXPIRED:
+          await keyManagerService.markRevoked(userKey);
+          await botManagerService.sendMessage({
+            userKey,
+            message: getText({ key: "key_revoked" }) as string,
+          });
+          break;
+        case OVPNCertificateStatus.VALID:
+          await keyManagerService.markActive(userKey);
+          await botManagerService.sendMessage({
+            userKey,
+            message: getText({ key: "key_activated" }) as string,
+            keyboard: [
+              [
+                {
+                  text: getText({ key: "download" }) as string,
+                  callback_data: `download ${userKey.key}`,
+                },
+              ],
+            ],
+          });
+          break;
+        default:
+          logger.error(
+            `[sqs][handleNudgeCommand] Unknown certificate status: ${certStatus}`
+          );
+          break;
+      }
   }
 }

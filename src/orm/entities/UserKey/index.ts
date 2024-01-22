@@ -4,6 +4,7 @@ import {
   ManyToOne,
   Column,
   OneToMany,
+  CreateDateColumn,
 } from "typeorm";
 import { User } from "../User";
 import { UserKeyStatus, UserKeyTgMetadata } from "./types";
@@ -35,4 +36,10 @@ export class UserKey {
 
   @OneToMany(() => UserRent, (userRent) => userRent.userKey)
   userRents: UserRent[];
+
+  @Column('datetime', { default: () => "CURRENT_TIMESTAMP" })
+  generatedAt: Date;
+
+  @CreateDateColumn({ type: 'datetime', default: () => "CURRENT_TIMESTAMP" })
+  createdAt: Date;
 }

@@ -21,3 +21,9 @@ export enum MQCommandStatus {
   SUCCESS = "SUCCESS",
   FAILURE = "FAILURE",
 }
+
+export enum OVPNCertificateStatus {
+  VALID = "V",
+  REVOKED = "R",
+  EXPIRED = "E",
+}

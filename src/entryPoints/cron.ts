@@ -13,5 +13,11 @@ export async function initCron(): Promise<void> {
       await keyManagerService.revokeLeasedKey(user, key, expiredRent, chatId);
     }
   });
+  schedule("0/10 * * * *", async () => {
+    const oldProcessingKeys = await keyManagerService.getOldProcessingKeys();
+    for (const oldProcessingKey of oldProcessingKeys) {
+      await keyManagerService.nudge(oldProcessingKey);
+    }
+  });
   logger.info("[cron][initCron] Cron initialized");
 }

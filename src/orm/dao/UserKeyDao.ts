@@ -1,4 +1,4 @@
-import { FindOptionsWhere, Not, Repository } from "typeorm";
+import { Between, FindOptionsWhere, LessThan, Not, Repository } from "typeorm";
 import { UserKey } from "../entities/UserKey";
 import { User } from "../entities/User";
 import { UserKeyStatus, UserKeyTgMetadata } from "../entities/UserKey/types";
@@ -28,6 +28,7 @@ export class UserKeyDao {
         eternal: false,
       });
       userKey.key = this.generateKey(user);
+      userKey.generatedAt = new Date();
       await this.userKeyRepository.save(userKey);
       created = true;
     }
@@ -74,20 +75,6 @@ export class UserKeyDao {
     });
   }
 
-  public async revoke(userKey: UserKey): Promise<void> {
-    await this.userKeyRepository.update(
-      { id: userKey.id },
-      { status: UserKeyStatus.REVOKED }
-    );
-  }
-
-  public async markProcessing(userKey: UserKey): Promise<void> {
-    await this.userKeyRepository.update(
-      { id: userKey.id },
-      { status: UserKeyStatus.PROCESSING }
-    );
-  }
-
   public async resetCallbackId(userKey: UserKey): Promise<void> {
     await this.userKeyRepository.update(
       { id: userKey.id },
@@ -102,8 +89,24 @@ export class UserKeyDao {
     await this.userKeyRepository.update({ id: userKey.id }, { status });
   }
 
-  public async save(userKey: UserKey): Promise<UserKey> {
+  public async save(
+    userKey: { id: number } & Partial<UserKey>
+  ): Promise<UserKey> {
     return await this.userKeyRepository.save(userKey, { reload: true });
+  }
+
+  public async getProcessingKeys(opts: {
+    from: Date | null;
+    to: Date;
+  }): Promise<Array<UserKey>> {
+    const { from, to } = opts;
+
+    return this.userKeyRepository.find({
+      where: {
+        status: UserKeyStatus.PROCESSING,
+        generatedAt: from ? Between(from, to) : LessThan(to),
+      },
+    });
   }
 
   public generateKey(user: User): string {
