@@ -11,12 +11,12 @@ export class UserKeyDao {
     this.userKeyRepository = AppDataSource.getRepository(UserKey);
   }
 
-  public async getOrCreateUserKey(
+  public async getOrCreateActiveUserKey(
     user: User,
     tgMetadata: UserKeyTgMetadata
   ): Promise<[boolean, UserKey]> {
     let userKey = await this.userKeyRepository.findOne({
-      where: { user: { id: user.id }, status: Not(UserKeyStatus.DELETED) },
+      where: { user: { id: user.id }, status: UserKeyStatus.ACTIVE },
     });
     let created = false;
     if (!userKey) {
@@ -55,12 +55,13 @@ export class UserKeyDao {
 
   public async getByNameForUser(
     user: User,
-    keyName: string
+    keyName: string,
+    status?: UserKeyStatus
   ): Promise<UserKey | null> {
     return await this.userKeyRepository.findOne({
       where: {
         key: keyName,
-        status: Not(UserKeyStatus.DELETED),
+        status: status ?? Not(UserKeyStatus.DELETED),
         user: { id: user.id },
       },
     });

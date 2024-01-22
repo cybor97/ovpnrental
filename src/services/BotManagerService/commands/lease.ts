@@ -2,6 +2,7 @@ import { CommandRoute } from "../../../types";
 import { defaultReply } from "../../../utils/bot";
 import { getText } from "../../../locale";
 import { UserKeyStatus } from "../../../orm/entities/UserKey/types";
+import { InlineKeyboardButton } from "telegraf/typings/core/types/typegram";
 
 const LeaseCommand: CommandRoute = {
   filter: "lease",
@@ -14,20 +15,6 @@ const LeaseCommand: CommandRoute = {
       }
     );
     const { userKey } = rent;
-    const keyboard = [
-      [
-        {
-          text: getText({ key: "download" }) as string,
-          callback_data: `download ${userKey.key}`,
-        },
-      ],
-      [
-        {
-          text: getText({ key: "revoke" }) as string,
-          callback_data: `revoke ${userKey.key}`,
-        },
-      ],
-    ];
     const data = {
       key: userKey.key,
       expiresAt: rent.expiresAt,
@@ -42,6 +29,37 @@ const LeaseCommand: CommandRoute = {
       );
       return;
     }
+
+    let keyboard: InlineKeyboardButton[][] | undefined;
+    switch (userKey.status) {
+      case UserKeyStatus.ACTIVE:
+        keyboard = [
+          [
+            {
+              text: getText({ key: "download" }) as string,
+              callback_data: `download ${userKey.key}`,
+            },
+          ],
+          [
+            {
+              text: getText({ key: "revoke" }) as string,
+              callback_data: `revoke ${userKey.key}`,
+            },
+          ],
+        ];
+        break;
+      case UserKeyStatus.REVOKED:
+        keyboard = [
+          [
+            {
+              text: getText({ key: "renew" }) as string,
+              callback_data: `renew ${userKey.key}`,
+            },
+          ],
+        ];
+        break;
+    }
+
     await defaultReply(
       ctx,
       getText({

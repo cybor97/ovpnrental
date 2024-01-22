@@ -80,10 +80,8 @@ export class KeyManagerService {
     user: User,
     tgMetadata: UserKeyTgMetadata
   ): Promise<[boolean, UserRent]> {
-    const [userKeyCreated, userKey] = await this.userKeyDao.getOrCreateUserKey(
-      user,
-      tgMetadata
-    );
+    const [userKeyCreated, userKey] =
+      await this.userKeyDao.getOrCreateActiveUserKey(user, tgMetadata);
     if (userKeyCreated) {
       this.sqsService.eventEmitter.emit(MQCommand.CREATE, {
         clientName: userKey.key,
@@ -101,7 +99,11 @@ export class KeyManagerService {
   ): Promise<[boolean, UserKey | null]> {
     let userKey: UserKey | null = null;
     if (keyName) {
-      userKey = await this.userKeyDao.getByNameForUser(user, keyName);
+      userKey = await this.userKeyDao.getByNameForUser(
+        user,
+        keyName,
+        UserKeyStatus.REVOKED
+      );
     } else {
       let keys = await this.getUserKeys(user.tgId, UserKeyStatus.REVOKED);
       if (keys.length === 1) {
@@ -118,9 +120,9 @@ export class KeyManagerService {
       userKey,
       KEY_LEASE_DURATION
     );
-    if (userRentCreated) {
+    if (userRentCreated || userKey.status === UserKeyStatus.REVOKED) {
       await this.updateChatId(userKey, chatId);
-
+      
       userKey.key = this.userKeyDao.generateKey(user);
       userKey.status = UserKeyStatus.PROCESSING;
       await this.userKeyDao.save(userKey);

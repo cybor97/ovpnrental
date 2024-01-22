@@ -12,7 +12,7 @@ export default {
   lease_command: () => "Lease a VPN key for some time 🔑",
   list_command: () => "List my VPN keys 📋",
   renew_command: () => "Renew a key (one more please!) ⏳",
-  revoke_command: () => "Revoke a key (pass them upon leaving, you mtfk!) 🗑️",
+  revoke_command: () => "Revoke a key (pass them upon leaving!) 🗑️",
 
   status_pending: () => "Pending ⏳",
   status_processing: () => "Processing 🛠️",
@@ -27,17 +27,17 @@ export default {
   },
   order_created: (data: unknown) => {
     const leaseData = data as LeaseCreatedPayload;
-    return Format.fmt`Gotcha. You will receive the key 🔑${leaseData.key} shortly.`;
+    return Format.fmt`Gotcha 👍\nYou will receive the key 🔑${leaseData.key} shortly`;
   },
   revoke_order_created: (data: unknown) => {
     const leaseData = data as LeaseCreatedPayload;
-    return Format.fmt`Gotcha. Key 🔑${leaseData.key} will be revoked shortly.`;
+    return Format.fmt`Gotcha 👍\nKey 🔑${leaseData.key} will be revoked shortly`;
   },
   lease_created: (data: unknown) => {
     const leaseData = data as LeaseCreatedPayload;
     return Format.fmt`Your key 🔑${
       leaseData.key
-    } is leased until ⏳${Format.underline(
+    } is leased\nAvailable until ⏳${Format.underline(
       leaseData.expiresAt.toDateString()
     )}`;
   },
@@ -45,9 +45,13 @@ export default {
     const leaseData = data as LeaseCreatedPayload;
     return Format.fmt`Your key 🔑${
       leaseData.key
-    } is already in use until ⏳${Format.underline(
+    } is already in use\nLeased until ⏳${Format.underline(
       leaseData.expiresAt.toDateString()
-    )}. Sorry, you cannot rent another one.`;
+    )}\nSorry, you cannot rent another one`;
+  },
+  already_in_use_revoked: (data: unknown) => {
+    const leaseData = data as LeaseCreatedPayload;
+    return Format.fmt`Your already have a key 🔑${leaseData.key}, revoked though`;
   },
   no_keys: () => "No keys found ⚪",
   no_active_keys: () => "No active keys found ⚪",
