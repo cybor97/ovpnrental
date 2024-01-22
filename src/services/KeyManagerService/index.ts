@@ -157,7 +157,8 @@ export class KeyManagerService {
   }
 
   public async getOldProcessingKeys(): Promise<Array<UserKey>> {
-    return this.userKeyDao.getProcessingKeys({
+    return this.userKeyDao.getKeysByStatus({
+      statuses: [UserKeyStatus.PENDING, UserKeyStatus.PROCESSING],
       from: null,
       to: new Date(Date.now() - STUCK_KEY_DURATION),
     });
@@ -169,9 +170,14 @@ export class KeyManagerService {
       // to avoid nudging too often
       generatedAt: new Date(),
     });
-    this.sqsService.eventEmitter.emit(MQCommand.NUDGE, {
-      clientName: userKey.key,
-    });
+    this.sqsService.eventEmitter.emit(
+      userKey.status === UserKeyStatus.PENDING
+        ? MQCommand.CREATE
+        : MQCommand.NUDGE,
+      {
+        clientName: userKey.key,
+      }
+    );
   }
 
   public async getUserKeyByName(keyName: string): Promise<UserKey | null> {

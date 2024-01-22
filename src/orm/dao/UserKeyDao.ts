@@ -1,4 +1,11 @@
-import { Between, FindOptionsWhere, LessThan, Not, Repository } from "typeorm";
+import {
+  Between,
+  FindOptionsWhere,
+  In,
+  LessThan,
+  Not,
+  Repository,
+} from "typeorm";
 import { UserKey } from "../entities/UserKey";
 import { User } from "../entities/User";
 import { UserKeyStatus, UserKeyTgMetadata } from "../entities/UserKey/types";
@@ -95,15 +102,16 @@ export class UserKeyDao {
     return await this.userKeyRepository.save(userKey, { reload: true });
   }
 
-  public async getProcessingKeys(opts: {
+  public async getKeysByStatus(opts: {
+    statuses: UserKeyStatus[];
     from: Date | null;
     to: Date;
   }): Promise<Array<UserKey>> {
-    const { from, to } = opts;
+    const { from, to, statuses } = opts;
 
     return this.userKeyRepository.find({
       where: {
-        status: UserKeyStatus.PROCESSING,
+        status: In(statuses),
         generatedAt: from ? Between(from, to) : LessThan(to),
       },
     });
