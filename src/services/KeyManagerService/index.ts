@@ -129,8 +129,9 @@ export class KeyManagerService {
       this.sqsService.eventEmitter.emit(MQCommand.CREATE, {
         clientName: userKey.key,
       });
+      return [true, userKey];
     }
-    return [userRentCreated, userKey];
+    return [false, userKey];
   }
 
   public async downloadCertificate(
