@@ -1,5 +1,10 @@
 import { Format } from "telegraf";
-import { LeaseCreatedPayload, ListItemPayload, StatusData } from "../types";
+import {
+  KeyData,
+  LeaseCreatedPayload,
+  ListItemPayload,
+  StatusData,
+} from "../types";
 
 export default {
   download: () => "Download 📲 💻",
@@ -58,15 +63,14 @@ export default {
   fail_to_renew: () => "Failed to renew a key ❌, might be already renewed",
   fail_to_revoke: () => "Failed to revoke a key ❌, might be already revoked",
   fail_to_download: () => "Failed to download a key ❌, try again later",
-  key_activated: () => "Your key has been activated 🟢🎉!",
+  key_activated: (data: unknown) =>
+    `Your key 🔑${(data as KeyData).keyName} has been activated 🟢🎉!`,
   status_updated: (data: unknown) => {
     const statusAfter = (data as StatusData).statusAfter;
     return `User key is now ${statusAfter}`;
   },
   download_key: (data: unknown) =>
-    `Key 🔑${
-      (data as { keyName: string }).keyName
-    } will be sent to you shortly`,
+    `Key 🔑${(data as KeyData).keyName} will be sent to you shortly`,
   key_revoked_download: () =>
     "Key is revoked 🗑️\nBut you can still renew it ⏳💪",
   key_revoked: () => "Key is now revoked 🗑️",

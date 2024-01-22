@@ -12,3 +12,7 @@ export interface ListItemPayload {
 export interface StatusData {
   statusAfter: string;
 }
+
+export interface KeyData {
+  keyName: string;
+}

@@ -142,7 +142,10 @@ async function handleCreateCommand(
 
     await botManagerService.sendMessage({
       userKey,
-      message: getText({ key: "key_activated" }) as string,
+      message: getText({
+        key: "key_activated",
+        data: { keyName: userKey.key },
+      }) as string,
       keyboard,
     });
   } else {
@@ -239,7 +242,10 @@ async function handleNudgeCommand(
           await keyManagerService.markActive(userKey);
           await botManagerService.sendMessage({
             userKey,
-            message: getText({ key: "key_activated" }) as string,
+            message: getText({
+              key: "key_activated",
+              data: { keyName: userKey.key },
+            }) as string,
             keyboard: [
               [
                 {
