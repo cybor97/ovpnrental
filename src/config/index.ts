@@ -2,6 +2,10 @@ export default {
   bot: {
     token: process.env.BOT_TOKEN,
   },
+  loki: {
+    host: process.env.LOKI_HOST,
+    label: process.env.LOKI_LABEL,
+  },
   sqs: {
     region: process.env.SQS_REGION as string,
     accessKeyId: process.env.SQS_ACCESS_KEY_ID as string,
