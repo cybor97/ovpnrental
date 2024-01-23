@@ -59,6 +59,18 @@ export class BotManagerService {
         },
       })
     );
+    this.bot.use((ctx, next) => {
+      // @ts-ignore
+      const messageText = ctx.update?.message?.text;
+      if (messageText?.trim()?.startsWith("/start ")) {
+        // @ts-ignore
+        ctx.update.message.text = messageText
+          .replace("start ", "")
+          .replace(/-/g, " ");
+      }
+      // @ts-ignore
+      return next(ctx);
+    });
     const commands = (await readdir(join(__dirname, "commands"))).map(
       (file) =>
         require(join(__dirname, "commands", file)).default as CommandRoute
@@ -96,6 +108,10 @@ export class BotManagerService {
 
     process.once("SIGINT", () => this.bot.stop("SIGINT"));
     process.once("SIGTERM", () => this.bot.stop("SIGTERM"));
+  }
+
+  public async getBotInfo() {
+    return this.bot.telegram.getMe();
   }
 
   public async sendMessage(opts: SendMessagePayload): Promise<void> {

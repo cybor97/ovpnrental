@@ -7,6 +7,7 @@ import {
 } from "../types";
 
 export default {
+  start: () => "Start 🚀",
   download: () => "Download 📲 💻",
   lease: () => "Lease 🔑",
   list: () => "List 📋",
@@ -63,17 +64,22 @@ export default {
   fail_to_renew: () => "Failed to renew a key ❌, might be already renewed",
   fail_to_revoke: () => "Failed to revoke a key ❌, might be already revoked",
   fail_to_download: () => "Failed to download a key ❌, try again later",
-  key_activated: (data: unknown) =>
-    `Your key 🔑${(data as KeyData).keyName} has been activated 🟢🎉!`,
-  status_updated: (data: unknown) => {
-    const statusAfter = (data as StatusData).statusAfter;
-    return `User key is now ${statusAfter}`;
+  key_activated: (data: unknown) => {
+    const keyName = (data as KeyData).keyName;
+    return `Your key 🔑${keyName} has been activated 🟢🎉!`;
   },
-  download_key: (data: unknown) =>
-    `Key 🔑${(data as KeyData).keyName} will be sent to you shortly`,
+  status_updated: (data: unknown) => {
+    const { key, statusAfter } = data as StatusData;
+    return `Your key 🔑${key} is now ${statusAfter}`;
+  },
+  download_key: (data: unknown) => {
+    const keyName = (data as KeyData).keyName;
+    return `Key 🔑${keyName} will be sent to you shortly`;
+  },
   key_revoked_download: () =>
     "Key is revoked 🗑️\nBut you can still renew it ⏳💪",
   key_revoked: () => "Key is now revoked 🗑️",
   choose_a_key: () => "Please specify the key you want to download 📲 💻",
   too_many_requests: () => "Chill for a bit and try later, alright? 😅",
+  download_in_dm: () => "Your key is ready, come and download it 📲 💻",
 };

@@ -37,5 +37,5 @@ export const MQCommands = [
   MQCommand.REVOKE,
   MQCommand.LIST,
   MQCommand.SHOW,
-  MQCommand.NUDGE
+  MQCommand.NUDGE,
 ];

@@ -8,6 +8,7 @@ import { KeyManagerService } from "../services/KeyManagerService";
 import { SQSService } from "../services/SQSService";
 import { MQCommandStatus, OVPNCertificateStatus } from "../types";
 import config from "../config";
+import { Markup } from "telegraf";
 
 interface UpdateKeyStatusMessage {
   clientName: string;
@@ -177,13 +178,29 @@ async function handleShowCommand(
       });
       break;
     case MQCommandStatus.SUCCESS:
-      await botManagerService.sendDocument({
-        userKey,
-        data: {
-          filename: `${userKey.key}.ovpn`,
-          source: Buffer.from(data.data),
-        },
-      });
+      if (!userKey.tgMetadata.issuedInChatId) {
+        await botManagerService.sendDocument({
+          userKey,
+          data: {
+            filename: `${userKey.key}.ovpn`,
+            source: Buffer.from(data.data),
+          },
+        });
+      } else {
+        const botInfo = await botManagerService.getBotInfo();
+        await botManagerService.sendMessage({
+          userKey,
+          message: getText({ key: "download_in_dm" }) as string,
+          keyboard: [
+            [
+              Markup.button.url(
+                getText({ key: "download" }) as string,
+                `https://t.me/${botInfo.username}?start=download-${userKey.key}`
+              ),
+            ],
+          ],
+        });
+      }
       break;
   }
 }
