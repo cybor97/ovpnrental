@@ -5,6 +5,7 @@ export default {
   loki: {
     host: process.env.LOKI_HOST,
     label: process.env.LOKI_LABEL,
+    token: process.env.LOKI_TOKEN,
   },
   sqs: {
     region: process.env.SQS_REGION as string,
