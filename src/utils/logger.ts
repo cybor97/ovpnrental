@@ -18,7 +18,8 @@ const transports: Array<ConsoleTransportInstance | LokiTransport> = [
 if (config.loki.host) {
   transports.unshift(
     new LokiTransport({
-      host: `https://${config.loki.token}@${config.loki.host}`,
+      host: `https://${config.loki.host}`,
+      basicAuth: `api_key:${config.loki.token}`,
       labels: { app: config.loki.label },
       json: true,
       format: winston.format.json(),
