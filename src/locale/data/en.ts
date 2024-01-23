@@ -75,4 +75,5 @@ export default {
     "Key is revoked 🗑️\nBut you can still renew it ⏳💪",
   key_revoked: () => "Key is now revoked 🗑️",
   choose_a_key: () => "Please specify the key you want to download 📲 💻",
+  too_many_requests: () => "Chill for a bit and try later, alright? 😅",
 };

@@ -1,20 +1,23 @@
-import { Context, Telegraf } from "telegraf";
-import config from "../../config";
+import { inspect } from "util";
 import { join } from "path";
+import { readdir } from "fs/promises";
+import { Context, Telegraf } from "telegraf";
+import rateLimit from "telegraf-ratelimit";
+
+import config from "../../config";
 import { CommandRoute } from "../../types";
 import { BOT_MENU } from "../../consts";
-import { readdir } from "fs/promises";
 import { User } from "../../orm/entities/User";
 import { UserKey } from "../../orm/entities/UserKey";
 import { KeyManagerService } from "../KeyManagerService";
 import { getTgIdFromContext } from "../../utils/bot";
 import logger from "../../utils/logger";
-import { inspect } from "util";
 import {
   SendDocumentPayload,
   SendMessagePayload,
   UserKeyPayload,
 } from "./types";
+import { getText } from "../../locale";
 
 export class BotManagerService {
   private static instance: BotManagerService;
@@ -39,7 +42,23 @@ export class BotManagerService {
     }
 
     this.bot = new Telegraf(config.bot.token);
-
+    this.bot.use(
+      rateLimit({
+        window: 3000,
+        limit: 1,
+        onLimitExceeded: (ctx) => {
+          ctx.reply(getText({ key: "too_many_requests" }));
+        },
+        keyGenerator: (ctx) => {
+          if (!ctx) {
+            return "";
+          }
+          const cmd = ctx.message?.text?.split(" ")?.[0];
+          console.log(`${ctx.from?.id}_${cmd}`);
+          return `${ctx.from?.id}_${cmd}`;
+        },
+      })
+    );
     const commands = (await readdir(join(__dirname, "commands"))).map(
       (file) =>
         require(join(__dirname, "commands", file)).default as CommandRoute

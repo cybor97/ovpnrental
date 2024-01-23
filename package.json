@@ -6,6 +6,7 @@
     "node-cron": "^3.0.3",
     "pkg": "^5.8.1",
     "telegraf": "^4.15.3",
+    "telegraf-ratelimit": "^2.0.0",
     "typeorm": "^0.3.17",
     "winston": "^3.11.0"
   },
