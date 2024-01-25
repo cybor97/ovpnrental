@@ -26,6 +26,10 @@ export default {
   status_revoked: () => "Revoked 🗑️",
   status_deleted: () => "Deleted ❌",
 
+  start_menu: () => "Here's the menu 📋",
+
+  no_command: () => "Didn't get ya ❌, try to choose one of the commands 📋",
+
   eternal: () => "♾️",
   key_list_item: (data: unknown) => {
     const { key, status, rentDuration } = data as ListItemPayload;

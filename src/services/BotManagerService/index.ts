@@ -10,14 +10,15 @@ import { BOT_MENU } from "../../consts";
 import { User } from "../../orm/entities/User";
 import { UserKey } from "../../orm/entities/UserKey";
 import { KeyManagerService } from "../KeyManagerService";
-import { getTgIdFromContext } from "../../utils/bot";
+import { defaultReply, getTgIdFromContext } from "../../utils/bot";
 import logger from "../../utils/logger";
 import {
   SendDocumentPayload,
   SendMessagePayload,
   UserKeyPayload,
 } from "./types";
-import { getText } from "../../locale";
+import { SupportedKeys, getText } from "../../locale";
+import { InlineKeyboardButton } from "telegraf/typings/core/types/typegram";
 
 export class BotManagerService {
   private static instance: BotManagerService;
@@ -59,18 +60,6 @@ export class BotManagerService {
         },
       })
     );
-    this.bot.use((ctx, next) => {
-      // @ts-ignore
-      const messageText = ctx.update?.message?.text;
-      if (messageText?.trim()?.startsWith("/start ")) {
-        // @ts-ignore
-        ctx.update.message.text = messageText
-          .replace("start ", "")
-          .replace(/-/g, " ");
-      }
-      // @ts-ignore
-      return next(ctx);
-    });
     const commands = (await readdir(join(__dirname, "commands"))).map(
       (file) =>
         require(join(__dirname, "commands", file)).default as CommandRoute
@@ -92,6 +81,38 @@ export class BotManagerService {
       if (commandRoute) {
         void handlers[commandRoute.filter](ctx);
       }
+    });
+    this.bot.command("start", (ctx) => {
+      if (ctx.message?.text) {
+        ctx.message.text = ctx.message.text.replace("-", " ");
+      }
+      const [, cmd] = ctx.message?.text?.split(" ") ?? [];
+
+      if (!cmd || !handlers[cmd]) {
+        let msg: string | null = null;
+        if (cmd && !handlers[cmd]) {
+          msg = getText({ key: "no_command" }) as string;
+        }
+        const keyboard: Array<Array<InlineKeyboardButton>> = [];
+        for (let i = 0; i < BOT_MENU.length; i += 2) {
+          const keyboardRow: Array<InlineKeyboardButton> = [];
+          for (let j = 0; j < 2; j++) {
+            const menuItem = BOT_MENU[i + j] as { command: SupportedKeys };
+            if (menuItem) {
+              const { command } = menuItem;
+              keyboardRow.push({
+                text: getText({ key: command }) as string,
+                callback_data: command,
+              });
+            }
+          }
+          keyboard.push(keyboardRow);
+        }
+        void defaultReply(ctx, msg ?? getText({ key: "start_menu" }), keyboard);
+        return;
+      }
+
+      void handlers[cmd](ctx);
     });
 
     const botMenu = [...BOT_MENU];
