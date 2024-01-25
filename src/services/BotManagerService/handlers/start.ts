@@ -13,7 +13,8 @@ export function startHandler(
       // @ts-ignore
       ctx.message.text = ctx.message.text
         .replace("-", " ")
-        .replace("start", "");
+        .replace(/(\/?)start/, "")
+        .trim();
     }
     // @ts-ignore
     const [cmd] = ctx.message?.text?.split(" ") ?? [];
