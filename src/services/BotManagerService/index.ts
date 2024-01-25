@@ -2,7 +2,6 @@ import { inspect } from "util";
 import { join } from "path";
 import { readdir } from "fs/promises";
 import { Context, Telegraf } from "telegraf";
-import rateLimit from "telegraf-ratelimit";
 
 import config from "../../config";
 import { CommandRoute } from "../../types";
@@ -10,15 +9,15 @@ import { BOT_MENU } from "../../consts";
 import { User } from "../../orm/entities/User";
 import { UserKey } from "../../orm/entities/UserKey";
 import { KeyManagerService } from "../KeyManagerService";
-import { defaultReply, getTgIdFromContext } from "../../utils/bot";
+import { getTgIdFromContext } from "../../utils/bot";
 import logger from "../../utils/logger";
 import {
   SendDocumentPayload,
   SendMessagePayload,
   UserKeyPayload,
 } from "./types";
-import { SupportedKeys, getText } from "../../locale";
-import { InlineKeyboardButton } from "telegraf/typings/core/types/typegram";
+import { callbackHandler } from "./handlers/callback";
+import { rateLimitHandler } from "./handlers/rateLimit";
 
 export class BotManagerService {
   private static instance: BotManagerService;
@@ -43,23 +42,7 @@ export class BotManagerService {
     }
 
     this.bot = new Telegraf(config.bot.token);
-    this.bot.use(
-      rateLimit({
-        window: 3000,
-        limit: 1,
-        onLimitExceeded: (ctx) => {
-          ctx.reply(getText({ key: "too_many_requests" }));
-        },
-        keyGenerator: (ctx) => {
-          if (!ctx) {
-            return "";
-          }
-          const cmd = ctx.message?.text?.split(" ")?.[0];
-          console.log(`${ctx.from?.id}_${cmd}`);
-          return `${ctx.from?.id}_${cmd}`;
-        },
-      })
-    );
+    this.bot.use(rateLimitHandler());
     const commands = (await readdir(join(__dirname, "commands"))).map(
       (file) =>
         require(join(__dirname, "commands", file)).default as CommandRoute
@@ -72,48 +55,8 @@ export class BotManagerService {
       this.bot.command(filter, handler);
       handlers[filter] = handler;
     }
-    this.bot.on("callback_query", (ctx) => {
-      // @ts-ignore
-      const data: string = ctx.callbackQuery.data;
-      const commandRoute = commands.find((command) =>
-        data.startsWith(command.filter)
-      );
-      if (commandRoute) {
-        void handlers[commandRoute.filter](ctx);
-      }
-    });
-    this.bot.command("start", (ctx) => {
-      if (ctx.message?.text) {
-        ctx.message.text = ctx.message.text.replace("-", " ");
-      }
-      const [, cmd] = ctx.message?.text?.split(" ") ?? [];
-
-      if (!cmd || !handlers[cmd]) {
-        let msg: string | null = null;
-        if (cmd && !handlers[cmd]) {
-          msg = getText({ key: "no_command" }) as string;
-        }
-        const keyboard: Array<Array<InlineKeyboardButton>> = [];
-        for (let i = 0; i < BOT_MENU.length; i += 2) {
-          const keyboardRow: Array<InlineKeyboardButton> = [];
-          for (let j = 0; j < 2; j++) {
-            const menuItem = BOT_MENU[i + j] as { command: SupportedKeys };
-            if (menuItem) {
-              const { command } = menuItem;
-              keyboardRow.push({
-                text: getText({ key: command }) as string,
-                callback_data: command,
-              });
-            }
-          }
-          keyboard.push(keyboardRow);
-        }
-        void defaultReply(ctx, msg ?? getText({ key: "start_menu" }), keyboard);
-        return;
-      }
-
-      void handlers[cmd](ctx);
-    });
+    this.bot.on("callback_query", callbackHandler(handlers, commands));
+    this.bot.command("start", callbackHandler(handlers, commands));
 
     const botMenu = [...BOT_MENU];
     for (let item of botMenu) {
