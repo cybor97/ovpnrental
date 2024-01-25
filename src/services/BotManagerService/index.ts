@@ -18,6 +18,7 @@ import {
 } from "./types";
 import { callbackHandler } from "./handlers/callback";
 import { rateLimitHandler } from "./handlers/rateLimit";
+import { startHandler } from "./handlers/start";
 
 export class BotManagerService {
   private static instance: BotManagerService;
@@ -56,7 +57,7 @@ export class BotManagerService {
       handlers[filter] = handler;
     }
     this.bot.on("callback_query", callbackHandler(handlers, commands));
-    this.bot.command("start", callbackHandler(handlers, commands));
+    this.bot.command("start", startHandler(handlers));
 
     const botMenu = [...BOT_MENU];
     for (let item of botMenu) {
