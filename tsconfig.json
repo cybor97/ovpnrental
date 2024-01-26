@@ -14,11 +14,14 @@
     "noImplicitAny": true,
     "skipLibCheck": true,
     "emitDecoratorMetadata": true,
+    "resolveJsonModule": true,
     "outDir": "dist",
+    "baseUrl": ".",
     "paths": {
       "@utils/*": ["./src/utils/*"]
     },
     "typeRoots": ["src/typings", "node_modules/@types"]
   },
+  "include": ["package.json", "src"],
   "exclude": ["node_modules", "dist"]
 }

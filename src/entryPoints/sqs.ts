@@ -178,7 +178,10 @@ async function handleShowCommand(
       });
       break;
     case MQCommandStatus.SUCCESS:
-      if (userKey.tgMetadata.issuedInChatId === userKey.user.tgId) {
+      if (
+        userKey.tgMetadata.issuedInChatId &&
+        userKey.tgMetadata.issuedInChatId === userKey.user.tgId
+      ) {
         await botManagerService.sendDocument({
           userKey,
           data: {
