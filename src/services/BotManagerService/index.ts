@@ -1,6 +1,4 @@
 import { inspect } from "util";
-import { join } from "path";
-import { readdir } from "fs/promises";
 import { Context, Telegraf } from "telegraf";
 
 import config from "../../config";
@@ -19,6 +17,7 @@ import {
 import { callbackHandler } from "./handlers/callback";
 import { rateLimitHandler } from "./handlers/rateLimit";
 import { startHandler } from "./handlers/start";
+import commands from "./commands";
 
 export class BotManagerService {
   private static instance: BotManagerService;
@@ -44,10 +43,6 @@ export class BotManagerService {
 
     this.bot = new Telegraf(config.bot.token);
     this.bot.use(rateLimitHandler());
-    const commands = (await readdir(join(__dirname, "commands"))).map(
-      (file) =>
-        require(join(__dirname, "commands", file)).default as CommandRoute
-    );
     const keyManagerService = await KeyManagerService.getService();
     const handlers: Record<string, (ctx: Context) => Promise<void>> = {};
     for (const commandRoute of commands) {
