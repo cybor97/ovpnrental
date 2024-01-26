@@ -1,13 +1,13 @@
 import rateLimit from "telegraf-ratelimit";
-import { getText } from "../../../locale";
 import { Context } from "telegraf";
+import logger from "../../../utils/logger";
 
 export function rateLimitHandler() {
   return rateLimit({
     window: 3000,
     limit: 1,
-    onLimitExceeded: (ctx) => {
-      ctx.reply(getText({ key: "too_many_requests" }));
+    onLimitExceeded: () => {
+      logger.info("[BotManagerService][rateLimitHandler] Rate limit exceeded");
     },
     keyGenerator: (ctx: Context) => {
       if (!ctx) {
