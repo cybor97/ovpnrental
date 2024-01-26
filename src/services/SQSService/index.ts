@@ -2,7 +2,6 @@ import { EventEmitter } from "stream";
 import { SQS, SQSClientConfig } from "@aws-sdk/client-sqs";
 import logger from "@utils/logger";
 import { SQSConfig } from "./types";
-import { randomUUID } from "crypto";
 
 const CONSUMER_DELAY = 500;
 
@@ -36,8 +35,6 @@ export class SQSService {
         (this.emitterConnection as SQS).sendMessage({
           MessageBody: JSON.stringify({ topic, data }),
           QueueUrl: this.config.emitterQueueUrl,
-          MessageDeduplicationId: randomUUID(),
-          MessageGroupId: topic,
         });
       });
     }
