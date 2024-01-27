@@ -7,7 +7,6 @@
     "pkg": "^5.8.1",
     "telegraf": "^4.15.3",
     "telegraf-ratelimit": "^2.0.0",
-    "tspath": "^2.6.8",
     "typeorm": "^0.3.17",
     "winston": "^3.11.0",
     "winston-loki": "^6.0.8"
@@ -23,8 +22,8 @@
   "version": "1.0.1",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon -r tsconfig-paths/register ./src/index.ts",
-    "build": "tsc -p tsconfig.json && tspath -f",
+    "dev": "nodemon ./src/index.ts",
+    "build": "tsc -p tsconfig.json",
     "start": "node ./dist/src/index.js",
     "db": "typeorm-ts-node-commonjs"
   },

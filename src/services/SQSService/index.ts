@@ -1,7 +1,7 @@
 import { EventEmitter } from "stream";
 import { SQS, SQSClientConfig } from "@aws-sdk/client-sqs";
-import logger from "@utils/logger";
 import { SQSConfig } from "./types";
+import logger from "../../utils/logger";
 
 const CONSUMER_DELAY = 500;
 
