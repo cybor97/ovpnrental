@@ -38,4 +38,5 @@ jobs:
         zip -r ovpnrental.zip ./
         scp -oStrictHostKeyChecking=no ovpnrental.zip deploy@${{ secrets.APP_SSH_HOST }}:ovpnrental.zip;
         scp -oStrictHostKeyChecking=no install.sh deploy@${{ secrets.APP_SSH_HOST }}:install.sh;
+        ssh -oStrictHostKeyChecking=no deploy@${{ secrets.APP_SSH_HOST }} <<< $'chmod +x ./install.sh';
         ssh -oStrictHostKeyChecking=no deploy@${{ secrets.APP_SSH_HOST }} <<< $'./install.sh';
