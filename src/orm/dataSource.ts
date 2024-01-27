@@ -11,6 +11,7 @@ import { existsSync, mkdirSync } from "fs";
 import logger from "../utils/logger";
 import { UpdateUserKey1705184832393 } from "./migrations/1705184832393-UpdateUserKey";
 import { AddCreatedAt1705958731396 } from "./migrations/1705958731396-AddCreatedAt";
+import { UpdateVPNServer1706360105938 } from "./migrations/1706360105938-UpdateVPNServer";
 
 const dbDir = join(homedir(), ".config/vpnrental");
 const dbPath = join(dbDir, "vpnrental.sqlite");
@@ -26,6 +27,7 @@ const AppDataSource = new DataSource({
     AddServer1702326435123,
     UpdateUserKey1705184832393,
     AddCreatedAt1705958731396,
+    UpdateVPNServer1706360105938
   ],
 });
 

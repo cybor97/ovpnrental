@@ -15,4 +15,8 @@ export default {
     agentQueueUrl: process.env.SQS_AGENT_QUEUE_URL as string,
     appQueueUrl: process.env.SQS_APP_QUEUE_URL as string,
   },
+  api: {
+    internalJwtSecret: process.env.API_INTERNAL_JWT_SECRET as string,
+    port: process.env.API_PORT ?? "8083",
+  },
 };

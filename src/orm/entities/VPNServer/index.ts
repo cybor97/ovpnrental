@@ -6,20 +6,17 @@ export class VPNServer {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('varchar')
-  ipAddress: string;
+  @Column("varchar")
+  host: string;
 
-  @Column('integer')
-  name: string;
+  @Column("varchar")
+  countryIsoCode: string;
 
-  @Column('varchar')
-  region: string;
+  @Column("varchar")
+  agentQueueName: string;
 
-  @Column('varchar')
-  agentVersionInstalled: number;
-
-  @Column('varchar')
-  agentInstalledAt: number;
+  @Column("json")
+  tags: string[];
 
   @OneToMany(() => UserKey, (userKey) => userKey.vpnServer)
   userKeys: UserKey[];
