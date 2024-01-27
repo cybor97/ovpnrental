@@ -19,16 +19,23 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: yarn install
-    - run: yarn build
+    - name: Install app dependencies
+      run: yarn install
+
+    - name: Build app
+      run: yarn build
+
+    - name: Clean up
+      run: rm -rf ./node_modules && rm -rf ./dist
 
     - name: Deploying
       uses: webfactory/ssh-agent@v0.8.0
       with:
         ssh-private-key: ${{ secrets.APP_SSH_KEY }}
 
-    - run: |
-        zip -r citadel_core.zip ./
-        scp -oStrictHostKeyChecking=no citadel_core.zip deploy@${{ secrets.APP_SSH_HOST }}:citadel_core.zip;
+    - name: Deliver
+      run: |
+        zip -r ovpnrental.zip ./
+        scp -oStrictHostKeyChecking=no ovpnrental.zip deploy@${{ secrets.APP_SSH_HOST }}:ovpnrental.zip;
         scp -oStrictHostKeyChecking=no install.sh deploy@${{ secrets.APP_SSH_HOST }}:install.sh;
         ssh -oStrictHostKeyChecking=no deploy@${{ secrets.APP_SSH_HOST }} <<< $'./install.sh';
