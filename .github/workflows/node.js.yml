@@ -1,0 +1,35 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run build
+    - run: npm test
+
+    - name: Deploying
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.APP_SSH_KEY }}
+
+    - run: |
+        zip -r citadel_core.zip ./
+        scp -oStrictHostKeyChecking=no citadel_core.zip deploy@${{ secrets.APP_SSH_HOST }}:citadel_core.zip;
+        scp -oStrictHostKeyChecking=no install.sh deploy@${{ secrets.APP_SSH_HOST }}:install.sh;
+        ssh -oStrictHostKeyChecking=no deploy@${{ secrets.APP_SSH_HOST }} <<< $'./install.sh';
