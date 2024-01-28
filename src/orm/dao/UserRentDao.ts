@@ -46,10 +46,10 @@ export class UserRentDao {
     await this.userRentRepository.remove(userRent);
   }
 
-  public async getExpiredKeys(): Promise<Array<UserRent>> {
+  public async getExpiredByKeys(date: Date): Promise<Array<UserRent>> {
     return this.userRentRepository.find({
       where: {
-        expiresAt: LessThan(new Date()),
+        expiresAt: LessThan(date),
         userKey: {
           status: UserKeyStatus.ACTIVE,
           eternal: false,

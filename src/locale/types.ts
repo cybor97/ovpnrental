@@ -17,3 +17,8 @@ export interface StatusData {
 export interface KeyData {
   keyName: string;
 }
+
+export interface NotificationData {
+  username?: string;
+  key: string;
+}

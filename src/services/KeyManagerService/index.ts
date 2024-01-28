@@ -16,6 +16,7 @@ import config from "../../config";
 
 const KEY_LEASE_DURATION = 1000 * 60 * 60 * 24 * 7;
 const STUCK_KEY_DURATION = 1000 * 60 * 30;
+const ALMOST_EXPIRED_DURATION = 1000 * 60 * 60 * 24;
 
 export class KeyManagerService {
   private static instance: KeyManagerService;
@@ -49,9 +50,9 @@ export class KeyManagerService {
         emitterQueueUrl: sqs.appQueueUrl,
         consumerQueueUrl: sqs.agentQueueUrl,
       });
-      const userKeyDao = await Dao.getDao<UserKeyDao>(UserKey);
-      const userRentDao = await Dao.getDao<UserRentDao>(UserRent);
-      const userDao = await Dao.getDao<UserDao>(User);
+      const userKeyDao = Dao.getDao<UserKeyDao>(UserKey);
+      const userRentDao = Dao.getDao<UserRentDao>(UserRent);
+      const userDao = Dao.getDao<UserDao>(User);
       KeyManagerService.instance = new KeyManagerService({
         sqsService,
         userKeyDao,
@@ -153,7 +154,16 @@ export class KeyManagerService {
   }
 
   public async getExpiredRents(): Promise<Array<UserRent>> {
-    return this.userRentDao.getExpiredKeys();
+    return this.userRentDao.getExpiredByKeys(new Date());
+  }
+
+  public getAlmostExpiredDate(userRent: UserRent): Date {
+    return new Date(userRent.expiresAt.getTime() - ALMOST_EXPIRED_DURATION);
+  }
+
+  public async getAlmostExpiredRents(): Promise<Array<UserRent>> {
+    const tomorrow = new Date(Date.now() + ALMOST_EXPIRED_DURATION);
+    return this.userRentDao.getExpiredByKeys(tomorrow);
   }
 
   public async getOldProcessingKeys(): Promise<Array<UserKey>> {

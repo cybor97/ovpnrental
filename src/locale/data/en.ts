@@ -3,6 +3,7 @@ import {
   KeyData,
   LeaseCreatedPayload,
   ListItemPayload,
+  NotificationData,
   StatusData,
 } from "../types";
 
@@ -86,4 +87,20 @@ export default {
   choose_a_key: () => "Please specify the key you want to download 📲 💻",
   too_many_requests: () => "Chill for a bit and try later, alright? 😅",
   download_in_dm: () => "Your key is ready, come and download it 📲 💻",
+  key_expired: (data: unknown) => {
+    const notificationData = data as NotificationData;
+    const keyName = notificationData.key;
+    const username = notificationData.username;
+    return `${
+      username ? `@${username} your key` : "Key"
+    } 🔑${keyName} has expired 😢`;
+  },
+  key_almost_expired: (data: unknown) => {
+    const notificationData = data as NotificationData;
+    const keyName = notificationData.key;
+    const username = notificationData.username;
+    return `${
+      username ? `@${username} your key` : "Key"
+    } 🔑${keyName} is almost expired ⏳`;
+  },
 };
