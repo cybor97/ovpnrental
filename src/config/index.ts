@@ -15,6 +15,13 @@ export default {
     agentQueueUrl: process.env.SQS_AGENT_QUEUE_URL as string,
     appQueueUrl: process.env.SQS_APP_QUEUE_URL as string,
   },
+  scaleway: {
+    accessKey: process.env.SCW_ACCESS_KEY as string,
+    secretKey: process.env.SCW_SECRET_KEY as string,
+    projectId: process.env.SCW_PROJECT_ID as string,
+    secretId: process.env.SCW_SECRET_ID as string,
+    region: process.env.SCW_REGION as string,
+  },
   api: {
     internalJwtSecret: process.env.API_INTERNAL_JWT_SECRET as string,
     port: process.env.API_PORT ?? "8083",

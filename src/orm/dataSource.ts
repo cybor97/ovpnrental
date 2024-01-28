@@ -34,15 +34,17 @@ const AppDataSource = new DataSource({
   ],
 });
 
-AppDataSource.initialize()
-  .then(() => {
-    logger.info("[DataSource][init] Data Source has been initialized!");
-  })
-  .catch((err) => {
-    logger.error(
-      "[DataSource][init] Error during Data Source initialization",
-      err
-    );
-  });
+if (process.env.WITH_MIGRATION_DATASOURCE === "true") {
+  AppDataSource.initialize()
+    .then(() => {
+      logger.info("[DataSource][init] Data Source has been initialized!");
+    })
+    .catch((err) => {
+      logger.error(
+        "[DataSource][init] Error during Data Source initialization",
+        err
+      );
+    });
+}
 
 export default AppDataSource;
